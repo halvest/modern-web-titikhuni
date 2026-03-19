@@ -1,0 +1,1 @@
+//src/galeri/page.tsx

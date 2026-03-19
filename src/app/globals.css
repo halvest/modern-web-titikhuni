@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- Base Styles --- */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    /* Memastikan body selalu putih bersih agar menyatu dengan navbar transparan */
+    @apply antialiased bg-white text-neutral-800;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
+  }
+
+  /* Font utility untuk Archivo Black (Google Fonts) */
+  .font-archivo {
+    font-family: var(--font-archivo), sans-serif;
+  }
+}
+
+/* --- Utility Classes --- */
+
+/* Efek Glassmorphism Utama */
+/* Gunakan ini di header dan dropdown mobile agar sinkron */
+.glass-effect {
+  @apply bg-white/70 backdrop-blur-xl border-b border-neutral-100/50;
+}
+
+/* Container Standar */
+.container-custom {
+  @apply max-w-7xl mx-auto px-6 md:px-10;
+}
+
+/* Spacing Section */
+.section-padding {
+  @apply py-20 md:py-32;
+}
+
+/* --- Animations --- */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #f5f5f5 25%, #e5e5e5 50%, #f5f5f5 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s infinite linear;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal {
+  animation: fadeIn 0.8s ease-out forwards;
+}
