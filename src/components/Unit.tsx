@@ -4,58 +4,71 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, MapPin, Lock } from "lucide-react";
+import { ArrowUpRight, MapPin, Lock, Home } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { formatRupiah } from "@/lib/formatRupiah";
 
-// Komponen Card Internal untuk tampilan Grid
+// Type definition sesuai schema database baru
+interface UnitProperty {
+  id: string;
+  title: string;
+  slug: string;
+  location: string;
+  price: number;
+  status: "Tersedia" | "Sold" | "Booked" | "Coming Soon";
+  image_url: string;
+  categories: { name: string } | null;
+}
+
 const UnitCardContent = ({
   unit,
   index,
-  isLocked = false,
 }: {
-  unit: any;
+  unit: UnitProperty;
   index: number;
-  isLocked?: boolean;
 }) => {
+  const isLocked = unit.status === "Coming Soon";
+
   return (
     <>
       <div
-        className={`relative aspect-[16/10] overflow-hidden bg-neutral-100 ${
-          isLocked ? "grayscale" : ""
-        }`}
+        className={`relative aspect-[16/10] overflow-hidden bg-neutral-100 ${isLocked ? "grayscale" : ""}`}
       >
         <Image
           src={unit.image_url}
-          alt={`Rumah Minimalis ${unit.title} ${unit.location} Yogyakarta`}
+          alt={unit.title}
           fill
           priority={index < 2}
           sizes="(max-width:768px) 100vw, (max-width:1200px) 50vw, 33vw"
-          className={`object-cover transition-transform duration-700 ${
-            isLocked ? "blur-[2px] opacity-60" : "group-hover:scale-105"
-          }`}
+          className={`object-cover transition-transform duration-700 ${isLocked ? "blur-[2px] opacity-60" : "group-hover:scale-105"}`}
         />
 
-        <div className="absolute top-6 left-6">
-          <span className="backdrop-blur-md px-4 py-1.5 text-[9px] uppercase tracking-[0.2em] font-bold bg-white/90 text-black">
+        {/* Badge Status & Kategori */}
+        <div className="absolute top-4 left-4 flex flex-col gap-2">
+          <span className="backdrop-blur-md px-3 py-1 text-[9px] uppercase tracking-widest font-bold bg-white/90 text-black w-fit">
             {unit.status}
           </span>
+          {unit.categories && (
+            <span className="backdrop-blur-md px-3 py-1 text-[9px] uppercase tracking-widest font-bold bg-black/80 text-white w-fit">
+              {unit.categories.name}
+            </span>
+          )}
         </div>
 
         {!isLocked && (
           <div className="absolute bottom-6 left-6 text-white drop-shadow-md">
-            <p className="text-xs uppercase tracking-widest font-medium">
+            <p className="text-sm font-bold tracking-tight">
               {formatRupiah(unit.price)}
             </p>
           </div>
         )}
 
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/20 transition-opacity duration-300">
-          <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-xl">
+          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-xl">
             {isLocked ? (
-              <Lock size={20} className="text-neutral-400" />
+              <Lock size={18} className="text-neutral-400" />
             ) : (
-              <ArrowUpRight size={24} className="text-black" />
+              <ArrowUpRight size={20} className="text-black" />
             )}
           </div>
         </div>
@@ -63,20 +76,18 @@ const UnitCardContent = ({
 
       <div className="mt-6 flex justify-between items-start">
         <div className={isLocked ? "opacity-40" : ""}>
-          <h3 className="text-xl uppercase tracking-tight text-neutral-900 mb-1 font-bold">
+          <h3 className="text-lg uppercase tracking-tight text-neutral-900 mb-1 font-bold">
             {unit.title}
           </h3>
-
           <div className="flex items-center gap-2 text-neutral-400">
-            <MapPin size={12} aria-hidden="true" />
+            <MapPin size={12} />
             <span className="text-[10px] uppercase tracking-widest">
               {unit.location}
             </span>
           </div>
         </div>
-
         {!isLocked && (
-          <div className="pt-2 text-[10px] uppercase tracking-[0.2em] text-neutral-300 group-hover:text-neutral-900 transition-colors">
+          <div className="pt-2 text-[10px] uppercase tracking-[0.2em] text-neutral-400 group-hover:text-black transition-colors">
             Detail
           </div>
         )}
@@ -86,7 +97,7 @@ const UnitCardContent = ({
 };
 
 export const Unit = () => {
-  const [units, setUnits] = useState<any[]>([]);
+  const [units, setUnits] = useState<UnitProperty[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -94,11 +105,17 @@ export const Unit = () => {
       try {
         const { data, error } = await supabase
           .from("units")
-          .select("*")
+          .select(
+            `
+            id, title, slug, location, price, status, image_url,
+            categories ( name )
+          `,
+          )
+          .is("deleted_at", null) // Hanya ambil yang belum dihapus (Soft Delete)
           .order("priority_order", { ascending: true });
 
         if (error) throw error;
-        if (data) setUnits(data);
+        setUnits(data || []);
       } catch (error) {
         console.error("Error fetching units:", error);
       } finally {
@@ -108,95 +125,49 @@ export const Unit = () => {
     fetchUnits();
   }, []);
 
-  if (loading) {
+  if (loading)
     return (
       <div className="py-32 flex flex-col items-center justify-center bg-white">
-        <div className="w-8 h-8 border-4 border-neutral-200 border-t-black rounded-full animate-spin mb-4"></div>
-        <p className="text-xs uppercase tracking-widest text-neutral-400">
-          Memuat Unit Terkini...
+        <div className="w-6 h-6 border-2 border-neutral-200 border-t-black rounded-full animate-spin mb-4"></div>
+        <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-400">
+          Sinkronisasi Data...
         </p>
       </div>
     );
-  }
 
   return (
-    <section id="unit-perumahan-jogja" className="py-24 md:py-32 bg-white">
-      {/* SEO Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "ItemList",
-            name: "Perumahan Titik Huni Yogyakarta",
-            itemListElement: units.map((unit, index) => ({
-              "@type": "ListItem",
-              position: index + 1,
-              name: unit.title,
-              url: `https://titikhuni.com/unit/${unit.slug}`,
-            })),
-          }),
-        }}
-      />
-
+    <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="max-w-xl"
-          >
-            <span className="text-[10px] uppercase tracking-[0.5em] text-neutral-400 block mb-4">
-              Perumahan Yogyakarta
-            </span>
-            <h2 className="text-4xl md:text-5xl uppercase leading-none tracking-tighter text-neutral-900">
-              Rumah Minimalis Jogja <br />
-              <span className="text-neutral-300">Titik Huni</span>
-            </h2>
-          </motion.div>
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-neutral-500 max-w-xs text-sm md:text-base leading-relaxed"
-          >
-            Pilihan rumah modern di Yogyakarta dengan desain minimalis tropis,
-            lokasi strategis, dan potensi investasi properti yang tinggi.
-          </motion.p>
-        </div>
+        <header className="mb-16">
+          <span className="text-[10px] uppercase tracking-[0.5em] text-neutral-400 block mb-4">
+            Katalog Properti
+          </span>
+          <h2 className="text-4xl md:text-5xl uppercase tracking-tighter text-neutral-900 font-bold leading-none">
+            Pilihan Hunian <br />
+            <span className="text-neutral-300">Yogyakarta</span>
+          </h2>
+        </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {units.map((unit, index) => {
-            const isLocked = unit.status === "Coming Soon";
-
-            return (
-              <motion.article
-                key={unit.id}
-                initial={{ opacity: 0, y: 25 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{
-                  duration: 0.6,
-                  delay: index * 0.1,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-              >
-                <div
-                  className={`relative group ${isLocked ? "cursor-default" : ""}`}
-                >
-                  {!isLocked ? (
-                    <Link href={`/unit/${unit.slug}`} className="block">
-                      <UnitCardContent unit={unit} index={index} />
-                    </Link>
-                  ) : (
-                    <UnitCardContent unit={unit} index={index} isLocked />
-                  )}
-                </div>
-              </motion.article>
-            );
-          })}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+          {units.map((unit, index) => (
+            <motion.article
+              key={unit.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <div className="relative group">
+                {unit.status !== "Coming Soon" ? (
+                  <Link href={`/unit/${unit.slug}`} className="block">
+                    <UnitCardContent unit={unit} index={index} />
+                  </Link>
+                ) : (
+                  <UnitCardContent unit={unit} index={index} />
+                )}
+              </div>
+            </motion.article>
+          ))}
         </div>
       </div>
     </section>

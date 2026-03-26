@@ -128,9 +128,9 @@ export default function Home() {
           </section> */}
 
           {/* GALERI */}
-          <section id="galeri">
+          {/* <section id="galeri">
             <Galeri />
-          </section>
+          </section> */}
 
           {/* FAQ */}
           <section id="faq">
