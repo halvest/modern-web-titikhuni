@@ -16,7 +16,7 @@ const dmSans = DM_Sans({
 });
 
 /* ================================
-VIEWPORT (NEXTJS BEST PRACTICE)
+VIEWPORT & THEME
 ================================ */
 export const viewport: Viewport = {
   width: "device-width",
@@ -25,10 +25,10 @@ export const viewport: Viewport = {
 };
 
 /* ================================
-SEO GLOBAL METADATA
+SEO GLOBAL METADATA (Updated to .id)
 ================================ */
 export const metadata: Metadata = {
-  metadataBase: new URL("https://titikhuni.com"),
+  metadataBase: new URL("https://titikhuni.id"),
 
   title: {
     default: "Titik Huni | Boutique Developer Yogyakarta",
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   },
 
   description:
-    "Developer properti di Yogyakarta yang menghadirkan rumah minimalis modern di Yogyakarta. Lokasi strategis, desain arsitektur premium, cocok untuk hunian maupun investasi properti.",
+    "Developer properti di Yogyakarta yang menghadirkan rumah minimalis modern. Lokasi strategis dan desain arsitektur premium di Sleman & Bantul.",
 
   keywords: [
     "perumahan jogja",
@@ -45,12 +45,9 @@ export const metadata: Metadata = {
     "rumah minimalis jogja",
     "developer properti jogja",
     "rumah strategis yogyakarta",
-    "rumah dekat kampus jogja",
-    "perumahan sleman",
-    "rumah kasihan bantul",
     "investasi properti jogja",
-    "developer rumah jogja",
     "rumah modern minimalis jogja",
+    "titik huni",
   ],
 
   verification: {
@@ -68,6 +65,9 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
 
@@ -75,14 +75,13 @@ export const metadata: Metadata = {
     title: "Titik Huni | Perumahan Modern di Yogyakarta",
     description:
       "Pilihan rumah modern di Sleman dan Bantul Yogyakarta dengan desain minimalis tropis dan lokasi strategis.",
-    url: "https://titikhuni.com",
+    url: "https://titikhuni.id",
     siteName: "Titik Huni",
     locale: "id_ID",
     type: "website",
-
     images: [
       {
-        url: "https://titikhuni.com/assets/images/og-property.jpg",
+        url: "/assets/images/og-property.jpg", // Menggunakan path relatif agar aman saat migrasi domain
         width: 1200,
         height: 630,
         alt: "Perumahan Titik Huni Yogyakarta",
@@ -95,11 +94,11 @@ export const metadata: Metadata = {
     title: "Titik Huni | Perumahan Modern di Yogyakarta",
     description:
       "Developer properti di Yogyakarta dengan desain rumah minimalis modern dan lokasi strategis.",
-    images: ["https://titikhuni.com/assets/images/og-property.jpg"],
+    images: ["/assets/images/og-property.jpg"],
   },
 
   alternates: {
-    canonical: "https://titikhuni.com",
+    canonical: "https://titikhuni.id",
   },
 };
 
@@ -115,10 +114,10 @@ export default function RootLayout({
   const GTM_ID = "GTM-WT79LLNQ";
 
   return (
-    <html lang="id">
+    <html lang="id" className="scroll-smooth">
       <body className={clsx(dmSans.className, "antialiased bg-white")}>
         {/* ================================
-        GOOGLE TAG MANAGER
+        GOOGLE TAG MANAGER (GTM)
         ================================= */}
         <Script
           id="gtm-script"
@@ -151,7 +150,6 @@ export default function RootLayout({
             s.parentNode.insertBefore(t,s)}
             (window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
-
             fbq('init', '${PIXEL_ID}');
             fbq('track', 'PageView');
             `,
@@ -163,7 +161,7 @@ export default function RootLayout({
         ================================= */}
         <Script
           id="clarity"
-          strategy="afterInteractive"
+          strategy="lazyOnload" // Gunakan lazyOnload untuk alat analitik non-kritis
           dangerouslySetInnerHTML={{
             __html: `
             (function(c,l,a,r,i,t,y){
@@ -176,36 +174,57 @@ export default function RootLayout({
         />
 
         {/* ================================
-        ORGANIZATION STRUCTURED DATA
+        ORGANIZATION STRUCTURED DATA (JSON-LD)
         ================================= */}
         <Script
           id="schema-org"
           type="application/ld+json"
+          strategy="beforeInteractive" // Load lebih awal agar crawler langsung mendapatkannya
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "RealEstateAgent",
               name: "Titik Huni",
-              url: "https://titikhuni.com",
-              logo: "https://titikhuni.com/assets/icons/dark-titik-huni.png",
+              url: "https://titikhuni.id",
+              logo: "https://titikhuni.id/assets/icons/dark-titik-huni.png",
               description:
                 "Developer properti dan jasa bangun rumah di Yogyakarta dengan desain modern minimalis.",
               address: {
                 "@type": "PostalAddress",
                 addressLocality: "Yogyakarta",
+                addressRegion: "DIY",
                 addressCountry: "ID",
               },
-              areaServed: "Yogyakarta",
+              areaServed: {
+                "@type": "City",
+                name: "Yogyakarta",
+              },
+              sameAs: [
+                "https://www.instagram.com/titikhuni.id", // Pastikan handle media sosial benar
+                "https://www.facebook.com/titikhuni",
+              ],
             }),
           }}
         />
 
+        {/* GTM Noscript (Fallback) */}
+        <noscript>
+          <iframe
+            src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          ></iframe>
+        </noscript>
+
+        {/* Layout Content */}
         {children}
 
+        {/* Vercel Analytics & Toast Notifications */}
         <Analytics />
         <Toaster position="top-center" reverseOrder={false} />
 
-        {/* NOSCRIPT PIXEL */}
+        {/* NOSCRIPT META PIXEL (Fallback) */}
         <noscript>
           <img
             height="1"

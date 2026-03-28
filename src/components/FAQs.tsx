@@ -43,20 +43,30 @@ const AccordionItem = ({
   isOpen: boolean;
   onClick: () => void;
 }) => (
-  <div className="border-b border-neutral-100 last:border-0">
+  <div className="border-b border-stone-50 last:border-0">
     <button
       onClick={onClick}
-      className="w-full flex justify-between items-center text-left gap-6 py-8 group"
+      className="w-full flex justify-between items-center text-left gap-8 py-10 group outline-none"
     >
       <h3
-        className={`text-lg md:text-xl font-archivo uppercase tracking-tight transition-colors duration-300 ${isOpen ? "text-neutral-900" : "text-neutral-400 group-hover:text-neutral-800"}`}
+        className={`text-lg md:text-xl font-medium tracking-tight transition-colors duration-700 ${
+          isOpen
+            ? "text-stone-900"
+            : "text-stone-400 group-hover:text-stone-600"
+        }`}
       >
         {item.question}
       </h3>
-      <div
-        className={`flex-shrink-0 w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-300 ${isOpen ? "bg-neutral-900 border-neutral-900 text-white" : "border-neutral-200 text-neutral-300"}`}
-      >
-        {isOpen ? <Minus size={14} /> : <Plus size={14} />}
+      <div className="flex-shrink-0 transition-transform duration-500">
+        {isOpen ? (
+          <Minus size={20} strokeWidth={1} className="text-stone-900" />
+        ) : (
+          <Plus
+            size={20}
+            strokeWidth={1}
+            className="text-stone-300 group-hover:text-stone-900"
+          />
+        )}
       </div>
     </button>
     <AnimatePresence>
@@ -65,10 +75,10 @@ const AccordionItem = ({
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="overflow-hidden"
         >
-          <p className="text-neutral-500 font-light leading-relaxed pb-8 max-w-2xl">
+          <p className="text-stone-500 font-light leading-[1.9] pb-10 max-w-2xl text-base md:text-lg">
             {item.answer}
           </p>
         </motion.div>
@@ -80,49 +90,71 @@ const AccordionItem = ({
 export function FAQs() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+
   return (
-    <section id="faq" className="py-24 md:py-32 bg-white">
+    <section id="faq" className="py-24 md:py-40 bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       <div className="max-w-7xl mx-auto px-6">
-        {/* Layout Grid tanpa Sticky */}
-        <div className="grid lg:grid-cols-12 gap-12 md:gap-16 items-start">
-          {/* SISI KIRI: Logo (Statis / Mengikuti Scroll) */}
-          <div className="lg:col-span-4 flex justify-center lg:justify-start">
+        <div className="grid lg:grid-cols-12 gap-16 lg:gap-24 items-start">
+          {/* SISI KIRI: Minimalist Brand Header */}
+          <aside className="lg:col-span-4 lg:sticky lg:top-32 space-y-12">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="relative w-40 h-40 md:w-56 md:h-56"
+              transition={{ duration: 1.5 }}
+              className="space-y-8"
             >
-              <Image
-                src="/assets/icons/dark-titik-huni.png"
-                alt="Titik Huni Logo"
-                fill
-                className="object-contain"
-                priority
-              />
+              <div className="relative w-20 h-20 opacity-20 group">
+                <Image
+                  src="/assets/icons/dark-titik-huni.png"
+                  alt="Titik Huni Logo"
+                  fill
+                  className="object-contain grayscale"
+                />
+              </div>
+
+              <div className="space-y-4">
+                <p className="text-[10px] font-medium uppercase tracking-[0.4em] text-stone-300">
+                  Tanya Jawab
+                </p>
+                <h2 className="text-3xl md:text-4xl font-medium tracking-tighter text-stone-900 leading-tight">
+                  Informasi seputar <br />
+                  <span className="text-stone-200 italic">Titik Huni.</span>
+                </h2>
+                <p className="text-stone-400 text-sm font-light leading-relaxed max-w-[260px]">
+                  Kami percaya transparansi adalah awal dari kepercayaan dalam
+                  membangun hunian.
+                </p>
+              </div>
             </motion.div>
-          </div>
+          </aside>
 
           {/* SISI KANAN: Accordion Content */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="lg:col-span-8 space-y-12"
+            transition={{ duration: 1.2, delay: 0.2 }}
+            className="lg:col-span-8 flex flex-col"
           >
-            <div>
-              <span className="text-[10px] font-archivo uppercase tracking-[0.5em] text-neutral-400 block mb-3">
-                Information & Support
-              </span>
-              <h2 className="text-2xl md:text-3xl font-archivo uppercase tracking-tighter text-neutral-900">
-                Frequently Asked{" "}
-                <span className="text-neutral-300">Questions.</span>
-              </h2>
-            </div>
-
-            <div className="border-t border-neutral-100">
+            <div className="border-t border-stone-100">
               {faqItems.map((item, index) => (
                 <AccordionItem
                   key={index}
@@ -135,22 +167,27 @@ export function FAQs() {
               ))}
             </div>
 
+            {/* Subtle CTA Card */}
             <Link
-              href="https://wa.me/6289509888404?text=Halo Titik Huni, saya ingin konsultasi mengenai pembangunan."
+              href="https://wa.me/6289509888404?text=Halo%20Titik%20Huni,%20saya%20ingin%20konsultasi%20mengenai%20hunian."
               target="_blank"
-              className="group flex flex-col sm:flex-row items-center justify-between gap-6 p-8 border border-neutral-100 rounded-2xl hover:border-black transition-all duration-500 bg-neutral-50/50"
+              className="mt-20 group flex items-center justify-between py-12 border-t border-stone-100 transition-all duration-700"
             >
-              <div>
-                <h4 className="font-archivo uppercase text-lg tracking-tight mb-1">
-                  Butuh Konsultasi Teknis?
+              <div className="space-y-1">
+                <h4 className="font-medium text-stone-900 text-lg md:text-xl tracking-tight">
+                  Masih memiliki pertanyaan teknis?
                 </h4>
-                <p className="text-xs text-neutral-400 font-light">
-                  Hubungi tim ahli kami untuk pembahasan RAB dan legalitas
-                  lahan.
+                <p className="text-stone-400 text-sm font-light">
+                  Tim kami siap membantu mendiskusikan RAB dan lahan Anda.
                 </p>
               </div>
-              <div className="w-12 h-12 rounded-full bg-black text-white flex items-center justify-center group-hover:scale-110 transition-transform">
-                <MessageSquare size={18} />
+              <div className="flex items-center gap-4 text-stone-900">
+                <span className="text-[10px] font-medium uppercase tracking-[0.3em] opacity-0 group-hover:opacity-100 transition-all duration-500">
+                  Tanya WhatsApp
+                </span>
+                <div className="w-12 h-12 rounded-full border border-stone-100 flex items-center justify-center group-hover:bg-stone-900 group-hover:text-white transition-all duration-700">
+                  <MessageSquare size={18} strokeWidth={1} />
+                </div>
               </div>
             </Link>
           </motion.div>

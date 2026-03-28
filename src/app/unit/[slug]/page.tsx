@@ -1,99 +1,114 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import Image from "next/image";
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  ArrowLeft,
-  MapPin,
-  Maximize,
-  Bed,
-  Bath,
-  ChevronRight,
-  ChevronLeft,
-  MessageSquare,
-  LandPlot,
-  Share2,
-} from "lucide-react";
-import { Toaster, toast } from "react-hot-toast";
-import { supabase } from "@/lib/supabaseClient";
-import { formatRupiah } from "@/lib/formatRupiah";
+import { ArrowLeft } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient"; // Menggunakan client yang sudah ada
+import UnitDetailClient from "./UnitDetailClient";
 
-export default function UnitDetailPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const [unit, setUnit] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [currentImg, setCurrentImg] = useState(0);
+/**
+ * Interface Props sesuai dengan standar Next.js App Router terbaru.
+ * params diakses secara async.
+ */
+type Props = {
+  params: Promise<{ slug: string }>;
+};
 
-  useEffect(() => {
-    async function fetchUnitDetail() {
-      try {
-        const { data, error } = await supabase
-          .from("units")
-          .select(
-            `
-            *,
-            unit_images (image_url, is_primary)
-          `,
-          )
-          .eq("slug", params.slug)
-          .single();
+/* ============================================================
+   1. GENERATE DYNAMIC METADATA (SEO OPTIMIZATION)
+   ============================================================ */
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
 
-        if (error) throw error;
-        setUnit(data);
-      } catch (err) {
-        console.error("Error fetching unit:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchUnitDetail();
-  }, [params.slug]);
+  // Mengambil data minimal untuk kebutuhan Meta Tags
+  const { data: unit } = await supabase
+    .from("units")
+    .select("title, location, image_url, price")
+    .eq("slug", slug)
+    .is("deleted_at", null)
+    .single();
 
-  if (loading)
-    return (
-      <div className="h-screen flex items-center justify-center bg-white">
-        <div className="w-8 h-8 border-4 border-neutral-200 border-t-black rounded-full animate-spin" />
-      </div>
-    );
+  if (!unit) {
+    return {
+      title: "Unit Tidak Ditemukan | Titik Huni Yogyakarta",
+    };
+  }
 
-  if (!unit)
-    return (
-      <div className="h-screen flex flex-col items-center justify-center bg-white">
-        <p className="text-sm uppercase tracking-widest text-neutral-400 mb-4">
-          Unit tidak ditemukan
-        </p>
-        <Link href="/unit" className="text-xs font-bold underline">
-          KEMBALI KE KATALOG
-        </Link>
-      </div>
-    );
+  const fullTitle = `${unit.title} - Properti Eksklusif di ${unit.location}`;
+  const fullDesc = `Dapatkan hunian modern ${unit.title} di ${unit.location} Yogyakarta. Desain arsitektur premium dengan lokasi strategis. Cek spesifikasi lengkap dan harga di Titik Huni.`;
 
-  // Gabungkan primary image dan gallery
-  const gallery =
-    unit.unit_images?.length > 0
-      ? unit.unit_images
-      : [{ image_url: unit.image_url }];
-
-  const nextImg = () =>
-    setCurrentImg((p) => (p === gallery.length - 1 ? 0 : p + 1));
-  const prevImg = () =>
-    setCurrentImg((p) => (p === 0 ? gallery.length - 1 : p - 1));
-
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast.success("Link berhasil disalin!");
+  return {
+    title: fullTitle,
+    description: fullDesc,
+    alternates: {
+      canonical: `https://titikhuni.com/unit/${slug}`,
+    },
+    openGraph: {
+      title: fullTitle,
+      description: fullDesc,
+      url: `https://titikhuni.com/unit/${slug}`,
+      siteName: "Titik Huni Developer",
+      images: [
+        {
+          url: unit.image_url,
+          width: 1200,
+          height: 630,
+          alt: unit.title,
+        },
+      ],
+      locale: "id_ID",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: fullTitle,
+      description: fullDesc,
+      images: [unit.image_url],
+    },
   };
+}
 
+/* ============================================================
+   2. MAIN SERVER COMPONENT (HIGH PERFORMANCE)
+   ============================================================ */
+export default async function UnitDetailPage({ params }: Props) {
+  const { slug } = await params;
+
+  /**
+   * Data Fetching dilakukan di sisi Server (RSC).
+   * Menarik data unit lengkap beserta relasi kategori.
+   */
+  const { data: unit, error } = await supabase
+    .from("units")
+    .select(
+      `
+      *,
+      categories (
+        name,
+        slug
+      )
+    `,
+    )
+    .eq("slug", slug)
+    .is("deleted_at", null)
+    .single();
+
+  // Jika data tidak ada atau error, arahkan ke halaman 404 standar Next.js
+  if (error || !unit) {
+    notFound();
+  }
+
+  /**
+   * STRUCTURED DATA (JSON-LD)
+   * Membantu Google memahami bahwa ini adalah produk Real Estate.
+   * Sangat krusial untuk SEO Property.
+   */
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "RealEstateListing",
-    name: `${unit.title} - Titik Huni`,
-    description: unit.description,
+    name: unit.title,
+    description: unit.description || `Properti eksklusif di ${unit.location}`,
+    image: unit.image_url,
+    url: `https://titikhuni.com/unit/${slug}`,
     address: {
       "@type": "PostalAddress",
       addressLocality: unit.location,
@@ -104,181 +119,42 @@ export default function UnitDetailPage({
       "@type": "Offer",
       price: unit.price,
       priceCurrency: "IDR",
+      availability: "https://schema.org/InStock",
+      url: `https://titikhuni.com/unit/${slug}`,
     },
   };
 
   return (
-    <main className="lg:h-screen lg:overflow-hidden bg-white">
+    <main className="min-h-screen bg-white relative">
+      {/* Injeksi JSON-LD ke Head */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Toaster position="bottom-center" />
 
-      {/* Floating Nav */}
-      <nav className="fixed top-6 left-6 right-6 z-50 flex justify-between items-center pointer-events-none">
+      {/* NAVIGASI FLOATING 
+          Memberikan UX yang intuitif untuk kembali ke katalog.
+      */}
+      <nav className="fixed top-6 left-6 z-50 md:top-10 md:left-10">
         <Link
           href="/unit"
-          className="pointer-events-auto flex items-center gap-2 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full border shadow-sm hover:bg-white transition-all"
+          className="flex items-center gap-3 bg-white/80 backdrop-blur-md px-5 py-2.5 rounded-full border border-neutral-200 shadow-sm hover:bg-black hover:text-white hover:border-black transition-all duration-500 group"
         >
-          <ArrowLeft size={16} />
-          <span className="text-[10px] uppercase tracking-widest font-bold">
-            Unit
+          <ArrowLeft
+            size={16}
+            className="group-hover:-translate-x-1 transition-transform"
+          />
+          <span className="text-[10px] uppercase tracking-[0.2em] font-bold">
+            Kembali ke Katalog
           </span>
         </Link>
-        <button
-          onClick={handleShare}
-          className="pointer-events-auto bg-white/90 backdrop-blur-md p-2.5 rounded-full border shadow-sm active:scale-90 transition-all"
-        >
-          <Share2 size={18} />
-        </button>
       </nav>
 
-      <div className="flex flex-col lg:flex-row h-full">
-        {/* LEFT: GALLERY */}
-        <section className="w-full lg:w-[55%] bg-neutral-100 relative h-[50vh] lg:h-full">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentImg}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-              className="relative w-full h-full"
-            >
-              <Image
-                src={gallery[currentImg].image_url}
-                alt={unit.title}
-                fill
-                className="object-cover"
-                priority
-              />
-              <div className="absolute inset-0 bg-black/10" />
-            </motion.div>
-          </AnimatePresence>
-
-          {gallery.length > 1 && (
-            <div className="absolute bottom-8 right-8 flex gap-2">
-              <button
-                onClick={prevImg}
-                className="p-3 bg-white/20 backdrop-blur-md text-white border border-white/30 hover:bg-white hover:text-black transition-all"
-              >
-                <ChevronLeft size={20} />
-              </button>
-              <button
-                onClick={nextImg}
-                className="p-3 bg-white/20 backdrop-blur-md text-white border border-white/30 hover:bg-white hover:text-black transition-all"
-              >
-                <ChevronRight size={20} />
-              </button>
-            </div>
-          )}
-        </section>
-
-        {/* RIGHT: CONTENT */}
-        <section className="w-full lg:w-[45%] flex flex-col h-full bg-white">
-          <div className="flex-1 overflow-y-auto px-6 py-10 md:px-12 lg:px-16">
-            <header className="mb-8">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-400 mb-4">
-                Properti Yogyakarta
-              </p>
-              <h1 className="text-4xl lg:text-5xl font-bold tracking-tighter leading-none mb-4 uppercase">
-                {unit.title.split(" ").slice(0, -1).join(" ")} <br />
-                <span className="text-neutral-300">
-                  {unit.title.split(" ").slice(-1)}
-                </span>
-              </h1>
-              <div className="flex items-center gap-2 text-neutral-500">
-                <MapPin size={14} />
-                <h2 className="text-[10px] uppercase tracking-widest font-medium">
-                  {unit.location}
-                </h2>
-              </div>
-            </header>
-
-            <article>
-              <p className="text-neutral-500 text-sm leading-relaxed mb-8">
-                {unit.description ||
-                  "Hunian modern tropis di Yogyakarta ini dirancang untuk ketenangan hidup maksimal dengan sirkulasi udara optimal dan pencahayaan alami."}
-              </p>
-            </article>
-
-            <div className="grid grid-cols-2 gap-6 border-t border-neutral-100 pt-8 mb-10">
-              <SpecItem
-                icon={<LandPlot size={18} />}
-                label="Luas Tanah"
-                value={`${unit.land_area}m²`}
-              />
-              <SpecItem
-                icon={<Maximize size={18} />}
-                label="Luas Bangunan"
-                value={`${unit.building_area}m²`}
-              />
-              <SpecItem
-                icon={<Bed size={18} />}
-                label="Kamar Tidur"
-                value={unit.bedroom_count}
-              />
-              <SpecItem
-                icon={<Bath size={18} />}
-                label="Kamar Mandi"
-                value={unit.bathroom_count}
-              />
-            </div>
-          </div>
-
-          {/* FIXED BOTTOM CTA */}
-          <div className="border-t border-neutral-100 p-6 md:px-12 lg:px-16 bg-neutral-50/50 backdrop-blur-sm">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <p className="text-[9px] uppercase tracking-widest text-neutral-400 font-bold mb-1">
-                  Harga Mulai dari
-                </p>
-                <p className="text-2xl font-black text-black leading-none">
-                  {formatRupiah(unit.price)}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[9px] uppercase tracking-widest font-bold text-green-700">
-                  {unit.status}
-                </span>
-              </div>
-            </div>
-
-            <a
-              href={`https://wa.me/6285190800168?text=Halo Titik Huni, saya tertarik dengan unit ${unit.title}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-between bg-black text-white px-6 py-5 rounded-xl hover:bg-neutral-800 transition-all active:scale-[0.98]"
-            >
-              <div className="text-left">
-                <p className="text-[9px] uppercase tracking-[0.2em] text-white/50 mb-0.5 font-bold">
-                  Konsultasi dan Jadwal Survey
-                </p>
-                <p className="font-bold tracking-tight">Hubungi Sekarang!</p>
-              </div>
-              <MessageSquare size={22} fill="white" />
-            </a>
-          </div>
-        </section>
-      </div>
+      {/* RENDER CLIENT COMPONENT 
+          Logika interaktif (Gallery Slider, Form WhatsApp, Animasi Framer Motion)
+          dipisahkan ke UnitDetailClient agar halaman utama tetap ringan.
+      */}
+      <UnitDetailClient unit={unit} />
     </main>
-  );
-}
-
-function SpecItem({ icon, label, value }: any) {
-  return (
-    <div className="flex items-start gap-3">
-      <div className="p-2 bg-neutral-50 rounded-lg text-neutral-400">
-        {icon}
-      </div>
-      <div>
-        <p className="text-[9px] uppercase tracking-widest text-neutral-400 font-bold leading-none mb-1">
-          {label}
-        </p>
-        <p className="text-sm font-bold text-neutral-800">{value}</p>
-      </div>
-    </div>
   );
 }

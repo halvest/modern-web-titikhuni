@@ -7,15 +7,14 @@ import {
   Search,
   Edit3,
   Trash2,
-  ExternalLink,
   FileText,
   Eye,
   Calendar,
-  User,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast, Toaster } from "react-hot-toast";
+import { deletePost } from "./actions"; // Pastikan path ke action.ts benar
 
 export default function AdminPostsPage() {
   const [posts, setPosts] = useState<any[]>([]);
@@ -29,44 +28,61 @@ export default function AdminPostsPage() {
   async function fetchPosts() {
     try {
       setLoading(true);
+
+      // Mengambil data dengan join kategori
       const { data, error } = await supabase
         .from("posts")
         .select(
           `
           *,
-          categories (name)
+          categories:category_id (
+            name
+          )
         `,
         )
-        .is("deleted_at", null) // Soft Delete Awareness
+        // .is("deleted_at", null) // Baris ini opsional jika Anda ingin tetap pakai soft delete,
+        // tapi untuk Hard Delete (Permanen), baris ini tidak diperlukan.
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase Error Details:", error);
+        throw error;
+      }
+
       setPosts(data || []);
     } catch (error: any) {
-      toast.error("Gagal memuat daftar artikel");
+      toast.error(
+        "Gagal sinkronisasi: " + (error.message || "Periksa koneksi"),
+      );
     } finally {
       setLoading(false);
     }
   }
 
-  async function softDeletePost(id: string) {
+  /**
+   * FIX: Hard Delete Permanen
+   * Memanggil Server Action untuk menghapus row di DB dan file di Storage
+   */
+  async function handlePermanentDelete(id: string) {
     if (
       !confirm(
-        "Arsipkan artikel ini? Artikel tidak akan tampil di blog publik.",
+        "Hapus artikel ini secara PERMANEN? File gambar di storage juga akan dihapus dan tidak bisa dikembalikan.",
       )
     )
       return;
 
-    const { error } = await supabase
-      .from("posts")
-      .update({ deleted_at: new Date().toISOString() })
-      .eq("id", id);
+    try {
+      const result = await deletePost(id);
 
-    if (error) {
-      toast.error("Gagal mengarsipkan artikel");
-    } else {
-      toast.success("Artikel berhasil diarsipkan");
-      setPosts(posts.filter((p) => p.id !== id));
+      if (result?.success) {
+        toast.success("Artikel dan media berhasil dihapus permanen");
+        // Update state lokal agar baris hilang dari UI
+        setPosts(posts.filter((p) => p.id !== id));
+      } else {
+        toast.error(result?.error || "Gagal menghapus artikel");
+      }
+    } catch (error: any) {
+      toast.error("Terjadi kesalahan sistem: " + error.message);
     }
   }
 
@@ -75,82 +91,83 @@ export default function AdminPostsPage() {
   );
 
   return (
-    <div className="p-6 md:p-10 space-y-8 bg-neutral-50 min-h-screen">
+    <div className="p-8 md:p-12 space-y-10 bg-white min-h-screen">
       <Toaster />
 
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-black uppercase tracking-tighter text-neutral-900">
-            Manajemen <span className="text-neutral-400">Konten</span>
+      {/* Hero Header */}
+      <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+        <div className="space-y-2">
+          <h1 className="text-5xl font-black uppercase tracking-tighter text-neutral-900">
+            Content <span className="text-neutral-300">Hub</span>
           </h1>
-          <p className="text-xs text-neutral-500 mt-1 uppercase tracking-widest font-bold">
-            Total Artikel: {posts.length} Publikasi
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-neutral-400">
+            Admin Management — {posts.length} entries
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative group">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
-              size={16}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-300"
+              size={18}
             />
             <input
               type="text"
-              placeholder="Cari Judul Artikel..."
-              className="pl-10 pr-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm outline-none w-64 focus:ring-2 focus:ring-black transition-all"
+              placeholder="Search articles..."
+              className="pl-12 pr-6 py-4 bg-neutral-50 border border-neutral-100 rounded-2xl text-sm font-bold outline-none w-full md:w-80 focus:bg-white focus:ring-4 focus:ring-neutral-50 transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <Link
             href="/admin/posts/new"
-            className="flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-neutral-800 transition-all shadow-lg shadow-black/10"
+            className="flex items-center gap-3 px-8 py-4 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-all shadow-2xl shadow-black/10"
           >
-            <Plus size={16} /> Tulis Artikel
+            <Plus size={18} strokeWidth={3} /> New Article
           </Link>
         </div>
       </header>
 
-      <div className="bg-white rounded-3xl border border-neutral-100 shadow-sm overflow-hidden">
+      {/* Table Content */}
+      <div className="border border-neutral-100 rounded-[40px] overflow-hidden bg-white shadow-2xl shadow-neutral-100/50">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left">
             <thead>
-              <tr className="bg-neutral-50/50 text-[10px] uppercase tracking-[0.2em] text-neutral-400 border-b border-neutral-100">
-                <th className="px-8 py-5 font-bold">Artikel</th>
-                <th className="px-8 py-5 font-bold">Kategori</th>
-                <th className="px-8 py-5 font-bold">Status</th>
-                <th className="px-8 py-5 font-bold">Statistik</th>
-                <th className="px-8 py-5 font-bold text-right">Aksi</th>
+              <tr className="bg-neutral-50/50 text-[9px] font-black uppercase tracking-[0.3em] text-neutral-400 border-b border-neutral-100">
+                <th className="px-10 py-6">Publication Details</th>
+                <th className="px-10 py-6">Category</th>
+                <th className="px-10 py-6">Status</th>
+                <th className="px-10 py-6 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-50">
               {loading ? (
                 <tr>
                   <td
-                    colSpan={5}
-                    className="px-8 py-20 text-center uppercase text-[10px] tracking-widest text-neutral-400"
+                    colSpan={4}
+                    className="px-10 py-32 text-center text-[10px] font-bold text-neutral-300 uppercase tracking-widest animate-pulse"
                   >
-                    Sinkronisasi Database...
+                    Synchronizing Database...
                   </td>
                 </tr>
               ) : filteredPosts.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
-                    className="px-8 py-20 text-center uppercase text-[10px] tracking-widest text-neutral-400"
+                    colSpan={4}
+                    className="px-10 py-32 text-center text-[10px] font-bold text-neutral-300 uppercase tracking-widest"
                   >
-                    Belum ada artikel yang ditulis
+                    No articles found
                   </td>
                 </tr>
               ) : (
                 filteredPosts.map((post) => (
                   <tr
                     key={post.id}
-                    className="group hover:bg-neutral-50/50 transition-colors"
+                    className="group hover:bg-neutral-50/30 transition-all"
                   >
-                    <td className="px-8 py-6">
-                      <div className="flex items-center gap-4">
-                        <div className="relative w-16 h-12 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
+                    <td className="px-10 py-8">
+                      <div className="flex items-center gap-6">
+                        <div className="relative w-24 h-16 rounded-2xl overflow-hidden bg-neutral-100 shadow-sm">
                           {post.featured_image ? (
                             <Image
                               src={post.featured_image}
@@ -159,67 +176,59 @@ export default function AdminPostsPage() {
                               className="object-cover"
                             />
                           ) : (
-                            <div className="flex items-center justify-center h-full text-neutral-300">
-                              <FileText size={16} />
+                            <div className="flex items-center justify-center h-full text-neutral-200">
+                              <FileText size={20} />
                             </div>
                           )}
                         </div>
-                        <div className="max-w-md">
-                          <p className="text-sm font-bold text-neutral-900 line-clamp-1 uppercase tracking-tight">
+                        <div className="space-y-1">
+                          <p className="text-base font-black text-neutral-900 leading-tight tracking-tighter uppercase">
                             {post.title}
                           </p>
-                          <div className="flex items-center gap-3 mt-1">
-                            <p className="text-[10px] text-neutral-400 flex items-center gap-1 uppercase">
-                              <Calendar size={10} />{" "}
+                          <div className="flex items-center gap-4 text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
+                            <span className="flex items-center gap-1.5">
+                              <Calendar size={12} />{" "}
                               {new Date(post.created_at).toLocaleDateString(
                                 "id-ID",
                               )}
-                            </p>
+                            </span>
+                            <span className="flex items-center gap-1.5 text-neutral-300">
+                              <Eye size={12} /> {post.views || 0}
+                            </span>
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-8 py-6">
-                      <span className="px-2 py-1 bg-neutral-100 rounded text-[9px] font-black uppercase tracking-tighter text-neutral-500">
-                        {post.categories?.name || "Umum"}
+                    <td className="px-10 py-8">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 border border-neutral-100 px-3 py-1.5 rounded-full">
+                        {post.categories?.name || "General"}
                       </span>
                     </td>
-                    <td className="px-8 py-6">
-                      <span
-                        className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-tighter ${
-                          post.status === "published"
-                            ? "bg-green-50 text-green-600"
-                            : "bg-neutral-100 text-neutral-500"
-                        }`}
-                      >
-                        {post.status}
-                      </span>
-                    </td>
-                    <td className="px-8 py-6">
-                      <p className="text-[10px] font-bold text-neutral-400 uppercase flex items-center gap-1">
-                        <Eye size={12} /> {post.views || 0} Views
-                      </p>
-                    </td>
-                    <td className="px-8 py-6">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link
-                          href={`/blog/${post.slug}`}
-                          target="_blank"
-                          className="p-2 text-neutral-400 hover:text-black transition-colors"
+                    <td className="px-10 py-8">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-1.5 h-1.5 rounded-full ${post.status === "published" ? "bg-emerald-500 animate-pulse" : "bg-neutral-300"}`}
+                        />
+                        <span
+                          className={`text-[10px] font-black uppercase tracking-widest ${post.status === "published" ? "text-neutral-900" : "text-neutral-400"}`}
                         >
-                          <ExternalLink size={16} />
-                        </Link>
+                          {post.status}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-10 py-8 text-right">
+                      <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all">
                         <Link
                           href={`/admin/posts/edit/${post.id}`}
-                          className="p-2 bg-neutral-50 text-neutral-600 rounded-lg hover:bg-black hover:text-white transition-all"
+                          className="p-3 bg-neutral-900 text-white rounded-xl hover:bg-black transition-all shadow-xl shadow-black/10"
                         >
-                          <Edit3 size={16} />
+                          <Edit3 size={18} />
                         </Link>
                         <button
-                          onClick={() => softDeletePost(post.id)}
-                          className="p-2 text-neutral-300 hover:text-red-600 transition-colors"
+                          onClick={() => handlePermanentDelete(post.id)}
+                          className="p-3 text-neutral-300 hover:text-red-500 transition-all"
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={18} />
                         </button>
                       </div>
                     </td>

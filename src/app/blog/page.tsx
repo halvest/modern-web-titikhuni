@@ -1,156 +1,194 @@
-// src/app/blog/page.tsx
+import { createClient } from "@/utils/supabase/server";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Calendar, User, Tag } from "lucide-react";
+import { Calendar, ArrowUpRight, BookOpen } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import type { Metadata } from "next";
 
-// 1. SEO Metadata (Penting untuk SEO Next.js)
-export const metadata = {
-  title: "Inspirasi Hunian & Investasi Properti | Titik Huni",
+// 🔥 SEO OPTIMIZED METADATA
+export const metadata: Metadata = {
+  title:
+    "Blog Properti Jogja: Tips Investasi, Beli Rumah & Tren 2026 | Titik Huni",
   description:
-    "Temukan tips desain interior modern tropis, panduan membeli rumah di Bantul, dan tren investasi properti terbaru di Yogyakarta.",
+    "Pelajari tips investasi properti, cara membeli rumah pertama, hingga tren properti terbaru di Yogyakarta. Panduan lengkap untuk investor dan pembeli rumah.",
   keywords: [
-    "Rumah Bantul",
-    "Investasi Properti Jogja",
-    "Desain Rumah Tropis",
-    "Titik Huni",
+    "blog properti jogja",
+    "tips beli rumah pertama",
+    "investasi properti yogyakarta",
+    "harga rumah jogja",
+    "tren properti 2026",
+    "cara beli rumah KPR",
   ],
+  alternates: {
+    canonical: "https://titikhuni.id/blog",
+  },
+  openGraph: {
+    title: "Blog Properti & Investasi di Yogyakarta | Titik Huni",
+    description:
+      "Insight properti, tips beli rumah, dan strategi investasi di Jogja.",
+    url: "https://titikhuni.id/blog",
+    siteName: "Titik Huni",
+    type: "website",
+    locale: "id_ID",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Blog Properti Jogja | Titik Huni",
+    description: "Tips beli rumah & strategi investasi properti di Yogyakarta.",
+  },
 };
 
-const POSTS = [
-  {
-    id: 1,
-    title: "Mengapa Bangunjiwo Menjadi Primadona Properti di Bantul",
-    excerpt:
-      "Analisis mendalam mengenai pertumbuhan nilai investasi dan daya tarik lingkungan asri di kawasan Bangunjiwo, Yogyakarta.",
-    date: "2024-03-15",
-    author: "Tim Titik Huni",
-    category: "Investasi",
-    image: "/assets/images/blog/bangunjiwo-investasi.jpg", // Pastikan path gambar tersedia
-    slug: "investasi-properti-bangunjiwo",
-  },
-  {
-    id: 2,
-    title: "5 Tips Desain Rumah Modern Tropis untuk Lahan Terbatas",
-    excerpt:
-      "Cara memaksimalkan sirkulasi udara dan cahaya alami pada bangunan dengan luas tanah di bawah 120m².",
-    date: "2024-03-10",
-    author: "Arsitek Kami",
-    category: "Desain",
-    image: "/assets/images/blog/desain-tropis.jpg",
-    slug: "tips-desain-modern-tropis",
-  },
-  {
-    id: 3,
-    title: "Panduan Lengkap Akad Kredit Rumah di Yogyakarta",
-    excerpt:
-      "Langkah-langkah praktis dan berkas yang perlu disiapkan saat ingin mengambil hunian melalui skema KPR.",
-    date: "2024-03-05",
-    author: "Legal Team",
-    category: "Edukasi",
-    image: "/assets/images/blog/panduan-kpr.jpg",
-    slug: "panduan-akad-kredit-rumah",
-  },
-];
+export default async function BlogArchivePage() {
+  const supabase = await createClient();
 
-export default function BlogPage() {
+  const { data: categories } = await supabase
+    .from("categories")
+    .select("name, slug")
+    .eq("type", "post");
+
+  const { data: posts } = await supabase
+    .from("posts")
+    .select(`*, categories:category_id (name, slug)`)
+    .eq("status", "published")
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false });
+
   return (
-    <main className="min-h-screen bg-white">
-      {/* Header Section */}
-      <section className="pt-32 pb-16 px-6 md:px-12 lg:px-24 border-b border-neutral-100">
-        <div className="max-w-4xl">
-          <p className="text-[10px] uppercase tracking-[0.4em] text-neutral-400 mb-6">
-            Journal & Insights
-          </p>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter leading-none mb-8">
-            Catatan <br />
-            <span className="text-neutral-300">Ruang & Hidup.</span>
-          </h1>
-          <p className="text-neutral-500 max-w-xl text-lg leading-relaxed">
-            Berbagi cerita seputar hunian, arsitektur, dan cara kami
-            mendefinisikan ketenangan di tengah alam Yogyakarta.
-          </p>
-        </div>
-      </section>
+    <>
+      {/* 🔥 STRUCTURED DATA (SEO BOOST BESAR) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Blog",
+            name: "Blog Titik Huni",
+            url: "https://titikhuni.id/blog",
+            description:
+              "Blog properti berisi tips investasi, panduan membeli rumah, dan tren properti terbaru di Yogyakarta.",
+          }),
+        }}
+      />
 
-      {/* Blog Grid Section */}
-      <section className="px-6 md:px-12 lg:px-24 py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-          {POSTS.map((post) => (
-            <article key={post.id} className="group cursor-pointer">
-              <Link href={`/blog/${post.slug}`} className="block">
-                {/* Image Wrapper */}
-                <div className="relative aspect-[4/5] overflow-hidden bg-neutral-100 mb-6">
-                  <Image
-                    src={post.image}
-                    alt={post.title}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+      <main className="bg-neutral-50 min-h-screen flex flex-col">
+        {/* NAVBAR */}
+        <Navbar />
+
+        <div className="flex-1 pt-20 md:pt-28">
+          {/* HERO */}
+          <section className="px-6 pt-10 pb-12">
+            <div className="max-w-7xl mx-auto">
+              <header className="max-w-3xl">
+                <p className="text-xs text-emerald-600 uppercase tracking-[0.3em] mb-4 font-semibold">
+                  Blog Properti
+                </p>
+
+                {/* 🔥 H1 SEO */}
+                <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-neutral-900 leading-tight">
+                  Insight, Tips & Tren Properti di Yogyakarta
+                </h1>
+
+                <p className="mt-4 text-neutral-500 text-sm leading-relaxed">
+                  Panduan lengkap membeli rumah, strategi investasi properti,
+                  hingga tren terbaru pasar properti Jogja.
+                </p>
+              </header>
+
+              {/* CATEGORY */}
+              <div className="mt-10 flex flex-wrap gap-3">
+                <Link
+                  href="/blog"
+                  className="px-4 py-2 text-xs rounded-full bg-black text-white"
+                >
+                  Semua
+                </Link>
+
+                {categories?.map((cat) => (
+                  <Link
+                    key={cat.slug}
+                    href={`/blog/category/${cat.slug}`}
+                    className="px-4 py-2 text-xs rounded-full border border-neutral-200 text-neutral-500 hover:text-black hover:border-neutral-400 transition"
+                  >
+                    {cat.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* BLOG GRID */}
+          <section className="px-6 pb-24">
+            <div className="max-w-7xl mx-auto">
+              <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-3">
+                {posts?.map((post) => (
+                  <article key={post.id} className="group">
+                    <Link href={`/blog/${post.slug}`}>
+                      <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-neutral-100">
+                        <Image
+                          src={
+                            post.featured_image ||
+                            "/assets/images/placeholder-blog.jpg"
+                          }
+                          alt={post.title}
+                          fill
+                          className="object-cover transition duration-700 group-hover:scale-[1.03]"
+                        />
+                      </div>
+
+                      <div className="mt-5 space-y-3">
+                        <div className="flex items-center gap-2 text-neutral-400 text-xs">
+                          <Calendar size={12} />
+                          <time dateTime={post.created_at}>
+                            {new Date(post.created_at).toLocaleDateString(
+                              "id-ID",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              },
+                            )}
+                          </time>
+                        </div>
+
+                        {/* 🔥 H2 SEO PER ARTICLE */}
+                        <h2 className="text-lg font-semibold text-neutral-900 leading-snug group-hover:text-emerald-600 transition">
+                          {post.title}
+                        </h2>
+
+                        <p className="text-sm text-neutral-500 line-clamp-2">
+                          {post.excerpt}
+                        </p>
+
+                        <div className="flex items-center gap-2 text-xs text-neutral-400 group-hover:text-black transition">
+                          <span>Baca artikel</span>
+                          <ArrowUpRight size={14} />
+                        </div>
+                      </div>
+                    </Link>
+                  </article>
+                ))}
+              </div>
+
+              {/* EMPTY */}
+              {(!posts || posts.length === 0) && (
+                <div className="py-32 text-center">
+                  <BookOpen
+                    className="mx-auto text-neutral-200 mb-4"
+                    size={48}
                   />
-                  <div className="absolute top-4 left-4">
-                    <span className="bg-white/90 backdrop-blur-md px-3 py-1 text-[9px] uppercase font-bold tracking-widest rounded-full">
-                      {post.category}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4 text-neutral-400 text-[10px] uppercase tracking-widest font-medium">
-                    <div className="flex items-center gap-1">
-                      <Calendar size={12} />
-                      <time dateTime={post.date}>
-                        {new Date(post.date).toLocaleDateString("id-ID", {
-                          month: "long",
-                          year: "numeric",
-                        })}
-                      </time>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <User size={12} />
-                      <span>{post.author}</span>
-                    </div>
-                  </div>
-
-                  <h2 className="text-2xl font-bold tracking-tight group-hover:text-neutral-500 transition-colors">
-                    {post.title}
-                  </h2>
-
-                  <p className="text-neutral-500 text-sm leading-relaxed line-clamp-3">
-                    {post.excerpt}
+                  <p className="text-sm text-neutral-400">
+                    Belum ada artikel tersedia
                   </p>
-
-                  <div className="flex items-center gap-2 pt-2 text-black font-bold text-[10px] uppercase tracking-widest group-hover:gap-4 transition-all">
-                    Baca Selengkapnya <ArrowRight size={14} />
-                  </div>
                 </div>
-              </Link>
-            </article>
-          ))}
+              )}
+            </div>
+          </section>
         </div>
-      </section>
 
-      {/* Newsletter / CTA (Optional) */}
-      <section className="bg-neutral-50 px-6 py-24 text-center">
-        <div className="max-w-2xl mx-auto">
-          <h3 className="text-3xl font-bold tracking-tight mb-4">
-            Dapatkan Update Unit Terbaru
-          </h3>
-          <p className="text-neutral-500 mb-8">
-            Jadilah yang pertama tahu saat kami merilis unit hunian baru di
-            lokasi strategis lainnya.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <input
-              type="email"
-              placeholder="Alamat Email Anda"
-              className="px-6 py-4 rounded-xl border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-black transition-all w-full sm:w-80"
-            />
-            <button className="bg-black text-white px-8 py-4 rounded-xl font-bold hover:bg-neutral-800 transition-all">
-              Berlangganan
-            </button>
-          </div>
-        </div>
-      </section>
-    </main>
+        {/* FOOTER */}
+        <Footer />
+      </main>
+    </>
   );
 }

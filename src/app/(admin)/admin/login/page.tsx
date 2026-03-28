@@ -1,52 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
-import { useRouter } from "next/navigation";
+import { loginAction } from "./actions"; // Sekarang file ini sudah ada
 import { Toaster, toast } from "react-hot-toast";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Fungsi pembungkus untuk menangani loading state dan error toast
+  async function handleSubmit(formData: FormData) {
     setLoading(true);
+    const result = await loginAction(formData);
 
-    try {
-      // Pastikan menggunakan metode dari supabaseClient yang sudah kita buat
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        toast.error("Login Gagal: " + error.message);
-        return;
-      }
-
-      if (data?.session) {
-        toast.success("Berhasil Masuk!");
-        // Berikan jeda sedikit agar cookie tersimpan sebelum redirect
-        setTimeout(() => {
-          router.push("/admin/dashboard");
-          router.refresh(); // Penting untuk memperbarui status session di server
-        }, 500);
-      }
-    } catch (err) {
-      toast.error("Terjadi kesalahan sistem.");
-    } finally {
+    if (result?.error) {
+      toast.error("Login Gagal: " + result.error);
       setLoading(false);
     }
-  };
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-white px-6">
       <Toaster position="top-center" />
 
-      <form onSubmit={handleLogin} className="w-full max-w-sm space-y-6">
+      <form action={handleSubmit} className="w-full max-w-sm space-y-6">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-black uppercase tracking-tighter text-neutral-900">
             Admin <span className="text-neutral-400">Login</span>
@@ -63,11 +39,10 @@ export default function LoginPage() {
             </label>
             <input
               required
+              name="email" // Penting: name harus sesuai dengan formData.get('email')
               type="email"
-              placeholder="admin@titikhuni.com"
+              placeholder="admin@titikhuni.id"
               className="w-full p-4 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:ring-2 focus:ring-black transition-all"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
             />
           </div>
@@ -78,11 +53,10 @@ export default function LoginPage() {
             </label>
             <input
               required
+              name="password"
               type="password"
               placeholder="••••••••"
               className="w-full p-4 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:ring-2 focus:ring-black transition-all"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
             />
           </div>

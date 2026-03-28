@@ -1,10 +1,15 @@
+// src/lib/supabaseClient.ts
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// Mencegah error 'required' jika variabel kosong saat proses build
+// Validasi wajib agar tidak menebak-nebak error
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error("❌ ERROR: Supabase env variables are missing!");
+}
+
 export const supabase = createClient(
-  supabaseUrl || "https://placeholder-url.supabase.co",
-  supabaseAnonKey || "placeholder-key",
+  supabaseUrl || "https://placeholder.supabase.co",
+  supabaseAnonKey || "placeholder",
 );

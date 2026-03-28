@@ -9,14 +9,14 @@ const config: Config = {
   theme: {
     extend: {
       container: {
-        padding: '1rem', 
+        padding: "1rem",
         center: true,
       },
       keyframes: {
-        'infinite-scroll': {
-          from: { transform: 'translateX(0)' },
-          to: { transform: 'translateX(-100%)' },
-        },  
+        "infinite-scroll": {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(-100%)" },
+        },
         gradient: {
           to: {
             backgroundPosition: "var(--bg-size) 0",
@@ -24,14 +24,14 @@ const config: Config = {
         },
       },
       animation: {
-        'infinite-scroll': 'infinite-scroll 25s linear infinite',
+        "infinite-scroll": "infinite-scroll 25s linear infinite",
         gradient: "gradient 8s linear infinite",
-       
       },
-      
     },
   },
-  
-  plugins: [require("tailwindcss-animate")],
+
+  // Menambahkan tailwindcss/typography untuk styling konten editor
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 };
+
 export default config;

@@ -1,15 +1,23 @@
 import { createClient } from "@/utils/supabase/server";
-import { CategoryList } from "./CategoryList";
+import { LeadsList } from "./LeadsList";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminCategoriesPage() {
+export default async function AdminLeadsPage() {
   const supabase = await createClient();
 
-  const { data: categories, error } = await supabase
-    .from("categories")
+  const { data: leads, error } = await supabase
+    .from("leads")
     .select("*")
-    .order("name", { ascending: true });
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return (
+      <div className="p-10 text-xs uppercase tracking-widest text-stone-400">
+        Database Connection Error.
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FCFCFB] text-stone-900 font-sans">
@@ -20,14 +28,14 @@ export default async function AdminCategoriesPage() {
               Titik Huni CRM
             </span>
             <h1 className="text-xl font-medium tracking-tight uppercase">
-              Manajemen Kategori
+              Manajemen Leads
             </h1>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-12">
-        <CategoryList initialCategories={categories || []} />
+      <main className="max-w-7xl mx-auto px-6 py-12">
+        <LeadsList initialLeads={leads || []} />
       </main>
     </div>
   );
