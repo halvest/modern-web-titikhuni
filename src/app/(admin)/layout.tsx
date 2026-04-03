@@ -13,7 +13,6 @@ export default function AdminLayout({
 
       {/* Area Konten Utama */}
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto bg-neutral-50">
-        {/* Hilangkan Navbar publik dari sini! Admin tidak butuh Navbar landing page */}
         <div className="p-4 md:p-10">{children}</div>
       </main>
     </div>

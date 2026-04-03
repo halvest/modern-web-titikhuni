@@ -26,8 +26,6 @@ export function LeadsList({ initialLeads }: { initialLeads: any[] }) {
   const [leads, setLeads] = useState(initialLeads);
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-
-  // ✅ Fungsi Filter
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
       const matchesStatus =

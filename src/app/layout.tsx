@@ -7,11 +7,12 @@ import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 
 /* ================================
-FONT OPTIMIZATION
+FONT OPTIMIZATION (Zero Layout Shift)
 ================================ */
 const dmSans = DM_Sans({
   subsets: ["latin"],
   display: "swap",
+  variable: "--font-dm-sans", // Gunakan CSS Variable untuk fleksibilitas
   preload: true,
 });
 
@@ -21,33 +22,35 @@ VIEWPORT & THEME
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#ffffff",
+  themeColor: "#065f46", // Menggunakan aksen Emerald agar selaras dengan brand
 };
 
 /* ================================
-SEO GLOBAL METADATA (Updated to .id)
+SEO GLOBAL METADATA
 ================================ */
+const SITE_URL = "https://titikhuni.id";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://titikhuni.id"),
+  metadataBase: new URL(SITE_URL),
 
   title: {
-    default: "Titik Huni | Boutique Developer Yogyakarta",
+    default: "Titik Huni | Boutique Developer & Jasa Bangun Rumah Yogyakarta",
     template: "%s | Titik Huni",
   },
 
   description:
-    "Developer properti di Yogyakarta yang menghadirkan rumah minimalis modern. Lokasi strategis dan desain arsitektur premium di Sleman & Bantul.",
+    "Developer properti premium di Yogyakarta. Spesialis rumah minimalis modern dan jasa arsitek/kontraktor dengan lokasi strategis di Sleman & Bantul.",
 
   keywords: [
+    "titik huni",
     "perumahan jogja",
     "rumah sleman",
     "rumah bantul",
-    "rumah minimalis jogja",
-    "developer properti jogja",
-    "rumah strategis yogyakarta",
-    "investasi properti jogja",
-    "rumah modern minimalis jogja",
-    "titik huni",
+    "jasa bangun rumah jogja",
+    "arsitek jogja",
+    "kontraktor jogja",
+    "investasi properti yogyakarta",
+    "developer rumah minimalis jogja",
   ],
 
   verification: {
@@ -55,13 +58,18 @@ export const metadata: Metadata = {
   },
 
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
     apple: "/apple-touch-icon.png",
   },
 
   robots: {
     index: true,
     follow: true,
+    nocache: true,
     googleBot: {
       index: true,
       follow: true,
@@ -72,39 +80,36 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "Titik Huni | Perumahan Modern di Yogyakarta",
+    title: "Titik Huni | Pilihan Rumah Modern & Strategis di Yogyakarta",
     description:
-      "Pilihan rumah modern di Sleman dan Bantul Yogyakarta dengan desain minimalis tropis dan lokasi strategis.",
-    url: "https://titikhuni.id",
+      "Wujudkan hunian impian di Yogyakarta. Desain arsitektur premium dengan sistem pembayaran transparan dan lokasi bernilai investasi tinggi.",
+    url: SITE_URL,
     siteName: "Titik Huni",
     locale: "id_ID",
     type: "website",
     images: [
       {
-        url: "/assets/images/og-property.jpg", // Menggunakan path relatif agar aman saat migrasi domain
+        url: `${SITE_URL}/og.jpg`, // Gunakan URL Absolut untuk OG
         width: 1200,
         height: 630,
-        alt: "Perumahan Titik Huni Yogyakarta",
+        alt: "Proyek Properti Titik Huni Yogyakarta",
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "Titik Huni | Perumahan Modern di Yogyakarta",
+    title: "Titik Huni | Boutique Developer Yogyakarta",
     description:
-      "Developer properti di Yogyakarta dengan desain rumah minimalis modern dan lokasi strategis.",
-    images: ["/assets/images/og-property.jpg"],
+      "Desain rumah modern minimalis dengan lokasi strategis di Yogyakarta.",
+    images: [`${SITE_URL}/og.jpg`],
   },
 
   alternates: {
-    canonical: "https://titikhuni.id",
+    canonical: SITE_URL,
   },
 };
 
-/* ================================
-ROOT LAYOUT
-================================ */
 export default function RootLayout({
   children,
 }: {
@@ -114,11 +119,15 @@ export default function RootLayout({
   const GTM_ID = "GTM-WT79LLNQ";
 
   return (
-    <html lang="id" className="scroll-smooth">
-      <body className={clsx(dmSans.className, "antialiased bg-white")}>
-        {/* ================================
-        GOOGLE TAG MANAGER (GTM)
-        ================================= */}
+    <html lang="id" dir="ltr" className="scroll-smooth">
+      <body
+        className={clsx(
+          dmSans.variable,
+          dmSans.className,
+          "antialiased bg-white selection:bg-emerald-100 selection:text-emerald-900",
+        )}
+      >
+        {/* GOOGLE TAG MANAGER */}
         <Script
           id="gtm-script"
           strategy="afterInteractive"
@@ -133,9 +142,7 @@ export default function RootLayout({
           }}
         />
 
-        {/* ================================
-        META PIXEL
-        ================================= */}
+        {/* META PIXEL */}
         <Script
           id="meta-pixel"
           strategy="afterInteractive"
@@ -156,12 +163,10 @@ export default function RootLayout({
           }}
         />
 
-        {/* ================================
-        MICROSOFT CLARITY
-        ================================= */}
+        {/* MICROSOFT CLARITY */}
         <Script
-          id="clarity"
-          strategy="lazyOnload" // Gunakan lazyOnload untuk alat analitik non-kritis
+          id="clarity-script"
+          strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `
             (function(c,l,a,r,i,t,y){
@@ -173,41 +178,59 @@ export default function RootLayout({
           }}
         />
 
-        {/* ================================
-        ORGANIZATION STRUCTURED DATA (JSON-LD)
-        ================================= */}
+        {/* LOCAL BUSINESS & SERVICE STRUCTURED DATA (Local SEO Power) */}
         <Script
-          id="schema-org"
+          id="schema-local-business"
           type="application/ld+json"
-          strategy="beforeInteractive" // Load lebih awal agar crawler langsung mendapatkannya
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "RealEstateAgent",
-              name: "Titik Huni",
-              url: "https://titikhuni.id",
-              logo: "https://titikhuni.id/assets/icons/dark-titik-huni.png",
-              description:
-                "Developer properti dan jasa bangun rumah di Yogyakarta dengan desain modern minimalis.",
-              address: {
-                "@type": "PostalAddress",
-                addressLocality: "Yogyakarta",
-                addressRegion: "DIY",
-                addressCountry: "ID",
-              },
-              areaServed: {
-                "@type": "City",
-                name: "Yogyakarta",
-              },
-              sameAs: [
-                "https://www.instagram.com/titikhuni.id", // Pastikan handle media sosial benar
-                "https://www.facebook.com/titikhuni",
+              "@graph": [
+                {
+                  "@type": "RealEstateAgent",
+                  "@id": `${SITE_URL}/#organization`,
+                  name: "Titik Huni",
+                  url: SITE_URL,
+                  logo: `${SITE_URL}/assets/icons/dark-titik-huni.png`,
+                  image: `${SITE_URL}/og.jpg`,
+                  description:
+                    "Developer properti dan kontraktor di Yogyakarta yang fokus pada hunian modern minimalis.",
+                  address: {
+                    "@type": "PostalAddress",
+                    addressLocality: "Yogyakarta",
+                    addressRegion: "DIY",
+                    addressCountry: "ID",
+                  },
+                  geo: {
+                    "@type": "GeoCoordinates",
+                    latitude: -7.7956, // Ganti dengan koordinat kantor Anda jika ada
+                    longitude: 110.3695,
+                  },
+                  contactPoint: {
+                    "@type": "ContactPoint",
+                    telephone: "+62-851-9080-0168",
+                    contactType: "sales",
+                    areaServed: "ID",
+                    availableLanguage: "Indonesian",
+                  },
+                  sameAs: [
+                    "https://www.instagram.com/titikhuni.id",
+                    "https://www.facebook.com/titikhuni",
+                  ],
+                },
+                {
+                  "@type": "Service",
+                  serviceType: "Real Estate Development",
+                  provider: { "@id": `${SITE_URL}/#organization` },
+                  areaServed: { "@type": "State", name: "Yogyakarta" },
+                },
               ],
             }),
           }}
         />
 
-        {/* GTM Noscript (Fallback) */}
+        {/* GTM FALLBACK */}
         <noscript>
           <iframe
             src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
@@ -217,21 +240,27 @@ export default function RootLayout({
           ></iframe>
         </noscript>
 
-        {/* Layout Content */}
         {children}
 
-        {/* Vercel Analytics & Toast Notifications */}
+        {/* Analytics & UI Tools */}
         <Analytics />
-        <Toaster position="top-center" reverseOrder={false} />
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 4000,
+            className:
+              "text-sm font-medium border border-stone-100 shadow-xl rounded-2xl",
+          }}
+        />
 
-        {/* NOSCRIPT META PIXEL (Fallback) */}
+        {/* META PIXEL FALLBACK */}
         <noscript>
           <img
             height="1"
             width="1"
             style={{ display: "none" }}
             src={`https://www.facebook.com/tr?id=${PIXEL_ID}&ev=PageView&noscript=1`}
-            alt="Meta Pixel"
+            alt=""
           />
         </noscript>
       </body>

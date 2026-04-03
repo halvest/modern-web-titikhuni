@@ -2,71 +2,125 @@
 @tailwind components;
 @tailwind utilities;
 
-/* --- Base Styles --- */
+/* --- 1. Root & Variable System --- */
+:root {
+  --foreground-rgb: 23, 23, 23; /* Stone-900 */
+  --background-rgb: 252, 252, 251; /* Off-white premium */
+
+  /* Fluid Typography & Spacing jika diperlukan */
+  --header-height: 80px;
+}
+
+/* --- 2. Base Layer Styles --- */
 @layer base {
+  * {
+    @apply border-stone-200;
+  }
+
   html {
     scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
-    /* Memastikan body selalu putih bersih agar menyatu dengan navbar transparan */
-    @apply antialiased bg-white text-neutral-800;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    line-height: 1.6;
+    background-color: rgb(var(--background-rgb));
+    color: rgb(var(--foreground-rgb));
+    @apply antialiased selection:bg-emerald-100 selection:text-emerald-900;
+    font-feature-settings: "cv02", "cv03", "cv04", "ss01";
   }
 
-  /* Font utility untuk Archivo Black (Google Fonts) */
-  .font-archivo {
-    font-family: var(--font-archivo), sans-serif;
+  /* Custom Scrollbar for Premium Feel */
+  ::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-stone-200 rounded-full hover:bg-stone-300 transition-colors;
+  }
+
+  /* Typography Hierarchy */
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply tracking-tighter font-medium;
   }
 }
 
-/* --- Utility Classes --- */
+/* --- 3. Component Layer (Re-usable Patterns) --- */
+@layer components {
+  /* Ultra-Modern Glassmorphism */
+  .glass-effect {
+    @apply bg-white/70 backdrop-blur-md border-b border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.03)];
+  }
 
-/* Efek Glassmorphism Utama */
-/* Gunakan ini di header dan dropdown mobile agar sinkron */
-.glass-effect {
-  @apply bg-white/70 backdrop-blur-xl border-b border-neutral-100/50;
+  /* Premium Card Effect */
+  .card-premium {
+    @apply bg-white border border-stone-200/60 rounded-[2rem] p-8 
+           transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]
+           hover:-translate-y-1;
+  }
+
+  /* Layout Utilities */
+  .container-custom {
+    @apply max-w-7xl mx-auto px-6 md:px-12 lg:px-16;
+  }
+
+  .section-padding {
+    @apply py-24 md:py-32 lg:py-40;
+  }
+
+  /* Modern Input Style */
+  .input-base {
+    @apply w-full bg-stone-50 border-none rounded-2xl px-6 py-4 
+           text-stone-900 placeholder:text-stone-300 
+           focus:ring-2 focus:ring-emerald-500/20 transition-all outline-none;
+  }
 }
 
-/* Container Standar */
-.container-custom {
-  @apply max-w-7xl mx-auto px-6 md:px-10;
+/* --- 4. Utilities & Advanced Animations --- */
+@layer utilities {
+  /* Text Balance untuk Headline yang lebih cantik */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Shimmer Effect untuk Loading States (Skeleton) */
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(245, 245, 245, 0) 0,
+      rgba(245, 245, 245, 0.8) 50%,
+      rgba(245, 245, 245, 0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Subtle Noise Texture Overlay (Opsional untuk kesan Premium) */
+  .noise-bg {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3Client ... %3E");
+  }
 }
 
-/* Spacing Section */
-.section-padding {
-  @apply py-20 md:py-32;
-}
-
-/* --- Animations --- */
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
+  from {
     background-position: 200% 0;
   }
-}
-
-.animate-shimmer {
-  background: linear-gradient(90deg, #f5f5f5 25%, #e5e5e5 50%, #f5f5f5 75%);
-  background-size: 200% 100%;
-  animation: shimmer 2.5s infinite linear;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
   to {
-    opacity: 1;
-    transform: translateY(0);
+    background-position: -200% 0;
   }
 }
 
-.reveal {
-  animation: fadeIn 0.8s ease-out forwards;
+/* --- 5. Fixes for Next.js Image & Third Party --- */
+img {
+  @apply h-auto max-w-full;
+}
+
+/* Menghilangkan ring biru saat klik di mobile */
+button:focus,
+a:focus {
+  @apply outline-none;
 }
