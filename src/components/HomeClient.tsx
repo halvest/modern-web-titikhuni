@@ -7,6 +7,6 @@ export const GaleriClient = dynamic(
   () => import("@/components/Galeri").then((mod) => mod.Galeri),
   {
     ssr: false,
-    loading: () => <div className="h-96 animate-pulse bg-neutral-100" />,
+    loading: () => <div className="h-96 animate-pulse bg-surface-muted" />,
   },
 );

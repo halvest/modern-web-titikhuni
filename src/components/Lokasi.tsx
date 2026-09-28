@@ -35,7 +35,7 @@ const projects = [
     status: "Ready Stock",
     coords: [-7.6521, 110.4182] as [number, number],
     desc: "Hunian sejuk dengan view Merapi langsung dari jendela rumah Anda.",
-    dotColor: "bg-neutral-900",
+    dotColor: "bg-foreground",
   },
   {
     id: 2,
@@ -44,7 +44,7 @@ const projects = [
     status: "Progress",
     coords: [-7.7612, 110.4789] as [number, number],
     desc: "Akses emas dekat Candi Kalasan, Bandara, dan pusat perbelanjaan.",
-    dotColor: "bg-neutral-400",
+    dotColor: "bg-foreground-soft",
   },
   {
     id: 3,
@@ -53,7 +53,7 @@ const projects = [
     status: "Sold Out",
     coords: [-7.8465, 110.3245] as [number, number],
     desc: "Kawasan seni dan budaya yang asri dengan desain material jujur.",
-    dotColor: "bg-neutral-200",
+    dotColor: "bg-surface-muted",
   },
   {
     id: 4,
@@ -62,7 +62,7 @@ const projects = [
     status: "Coming Soon",
     coords: [-7.8921, 110.3356] as [number, number],
     desc: "Eksklusivitas di jantung Bantul Kota untuk privasi keluarga Anda.",
-    dotColor: "bg-neutral-300",
+    dotColor: "bg-foreground-soft",
   },
 ];
 
@@ -96,15 +96,15 @@ export const Lokasi = () => {
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-3 py-1 bg-neutral-100 text-neutral-900 rounded-full mb-4"
+            className="inline-flex items-center gap-2 px-3 py-1 bg-surface-muted text-foreground rounded-full mb-4"
           >
             <Zap size={10} fill="currentColor" />
             <span className="text-[9px] font-archivo uppercase tracking-[0.2em] font-bold">
               Project Network
             </span>
           </motion.div>
-          <h2 className="text-3xl md:text-6xl font-archivo uppercase leading-none tracking-tighter text-neutral-900">
-            Akses <span className="text-neutral-300">Yogyakarta</span>{" "}
+          <h2 className="text-3xl md:text-6xl font-archivo uppercase leading-none tracking-tighter text-foreground">
+            Akses <span className="text-foreground-soft">Yogyakarta</span>{" "}
             <br className="hidden md:block" />
             Tanpa Batas.
           </h2>
@@ -127,8 +127,8 @@ export const Lokasi = () => {
                 }}
                 className={`w-full text-left p-5 md:p-6 transition-all duration-500 relative rounded-xl border ${
                   activeCoords === loc.coords
-                    ? "bg-neutral-900 border-neutral-900 shadow-xl scale-[1.01]"
-                    : "bg-white border-neutral-100 hover:border-neutral-300"
+                    ? "bg-foreground border-foreground shadow-xl scale-[1.01]"
+                    : "bg-white border-surface-muted hover:border-border-strong"
                 }`}
               >
                 <div className="flex justify-between items-start mb-3">
@@ -137,7 +137,7 @@ export const Lokasi = () => {
                       className={`w-1.5 h-1.5 rounded-full ${activeCoords === loc.coords ? "bg-white" : loc.dotColor} animate-pulse`}
                     />
                     <span
-                      className={`text-[9px] font-bold uppercase tracking-widest ${activeCoords === loc.coords ? "text-neutral-400" : "text-neutral-500"}`}
+                      className={`text-[9px] font-bold uppercase tracking-widest ${activeCoords === loc.coords ? "text-foreground-soft" : "text-foreground-soft"}`}
                     >
                       {loc.status}
                     </span>
@@ -147,17 +147,17 @@ export const Lokasi = () => {
                     className={`transition-transform duration-500 ${
                       activeCoords === loc.coords
                         ? "rotate-[-45deg] text-white"
-                        : "text-neutral-300"
+                        : "text-foreground-soft"
                     }`}
                   />
                 </div>
                 <h4
-                  className={`text-lg md:text-xl font-archivo uppercase tracking-tight mb-1 ${activeCoords === loc.coords ? "text-white" : "text-neutral-900"}`}
+                  className={`text-lg md:text-xl font-archivo uppercase tracking-tight mb-1 ${activeCoords === loc.coords ? "text-white" : "text-foreground"}`}
                 >
                   {loc.name}
                 </h4>
                 <p
-                  className={`text-xs font-light tracking-wide ${activeCoords === loc.coords ? "text-neutral-400" : "text-neutral-500"}`}
+                  className={`text-xs font-normal tracking-wide ${activeCoords === loc.coords ? "text-foreground-soft" : "text-foreground-soft"}`}
                 >
                   {loc.region}
                 </p>
@@ -170,7 +170,7 @@ export const Lokasi = () => {
             id="map-view"
             className="lg:col-span-8 h-[350px] md:h-[500px] lg:h-full relative order-1 lg:order-2"
           >
-            <div className="w-full h-full rounded-2xl overflow-hidden border border-neutral-100 shadow-sm relative bg-neutral-50">
+            <div className="w-full h-full rounded-2xl overflow-hidden border border-surface-muted shadow-sm relative bg-surface">
               {/* Interaction Overlay for Mobile */}
               {!isInteracting && (
                 <div
@@ -204,16 +204,16 @@ export const Lokasi = () => {
                     >
                       <Popup minWidth={200}>
                         <div className="p-1 text-center font-archivo">
-                          <h5 className="font-bold text-sm uppercase tracking-tight text-neutral-900">
+                          <h5 className="font-bold text-sm uppercase tracking-tight text-foreground">
                             {loc.name}
                           </h5>
-                          <p className="text-[10px] text-neutral-500 my-2 leading-relaxed">
+                          <p className="text-[10px] text-foreground-soft my-2 leading-relaxed">
                             {loc.desc}
                           </p>
                           <a
                             href={`https://wa.me/6289509888404?text=Halo Titik Huni, lokasi ${loc.name} presisinya dimana ya?`}
                             target="_blank"
-                            className="bg-neutral-900 text-white px-3 py-2 text-[9px] font-bold uppercase block tracking-widest transition-colors hover:bg-black mt-2"
+                            className="bg-foreground text-white px-3 py-2 text-[9px] font-bold uppercase block tracking-widest transition-colors hover:bg-black mt-2"
                           >
                             Dapatkan Lokasi
                           </a>
@@ -227,14 +227,14 @@ export const Lokasi = () => {
 
               {/* Float Card Info - Desktop Only */}
               <div className="absolute top-4 left-4 z-[1000] bg-white/90 backdrop-blur-md p-3 rounded-xl shadow-lg border border-white/50 hidden md:flex items-center gap-3">
-                <div className="w-8 h-8 bg-neutral-900 rounded-lg flex items-center justify-center text-white">
+                <div className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center text-white">
                   <Navigation size={16} />
                 </div>
                 <div>
-                  <p className="text-[8px] font-archivo uppercase tracking-widest text-neutral-400">
+                  <p className="text-[8px] font-archivo uppercase tracking-widest text-foreground-soft">
                     Map Preview
                   </p>
-                  <p className="text-[10px] font-bold text-neutral-900 uppercase tracking-tighter">
+                  <p className="text-[10px] font-bold text-foreground uppercase tracking-tighter">
                     Yogyakarta Area
                   </p>
                 </div>

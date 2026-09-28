@@ -36,3 +36,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# documentation/agents
+*.md
+!README.md
+!readme.md
+out.html
+
+# project directories
+/docs
+/supabase/migrations

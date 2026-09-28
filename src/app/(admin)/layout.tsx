@@ -1,20 +1,22 @@
 // src/app/(admin)/layout.tsx
-import AdminSidebar from "@/components/AdminSidebar";
+import { Metadata } from "next";
+import AdminShell from "@/components/admin/AdminShell";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Admin | Titik Huni",
+    template: "%s | Admin Titik Huni",
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="flex min-h-screen bg-neutral-50 overflow-hidden">
-      {/* Sidebar tetap di kiri dengan lebar statis */}
-      <AdminSidebar />
-
-      {/* Area Konten Utama */}
-      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto bg-neutral-50">
-        <div className="p-4 md:p-10">{children}</div>
-      </main>
-    </div>
-  );
+  return <AdminShell>{children}</AdminShell>;
 }

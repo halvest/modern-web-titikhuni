@@ -1,34 +1,45 @@
-import { createClient } from "@/utils/supabase/server";
+import { requireAdminPage } from "@/utils/supabase/server";
 import { CategoryList } from "./CategoryList";
+import { Plus } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminCategoriesPage() {
-  const supabase = await createClient();
+  const { supabase } = await requireAdminPage();
 
   const { data: categories, error } = await supabase
     .from("categories")
-    .select("*")
+    .select("id, name, slug")
     .order("name", { ascending: true });
 
   return (
-    <div className="min-h-screen bg-[#FCFCFB] text-stone-900 font-sans">
-      <header className="border-b border-stone-100 bg-white/80 backdrop-blur-md sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-[9px] font-medium uppercase tracking-[0.5em] text-emerald-600">
-              Titik Huni CRM
-            </span>
-            <h1 className="text-xl font-medium tracking-tight uppercase">
-              Manajemen Kategori
+    <div className="w-full space-y-6">
+      <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <div className="mb-1.5 flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
+              Kelola <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">Kategori</span>
             </h1>
           </div>
+          <p className="text-[13px] font-medium text-slate-500">
+            Atur dan kelompokkan konten blog serta unit properti Titik Huni.
+          </p>
         </div>
+        <a
+          href="#tambah-kategori"
+          className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-slate-900 px-4 text-sm font-bold text-white shadow-sm transition-all hover:bg-slate-800 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2"
+        >
+          <Plus size={15} aria-hidden="true" />
+          Tambah Kategori
+        </a>
       </header>
-
-      <main className="max-w-4xl mx-auto px-6 py-12">
+      {error ? (
+        <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-8 text-center text-sm text-rose-700">
+          Data kategori gagal dimuat. Periksa koneksi lalu muat ulang halaman.
+        </div>
+      ) : (
         <CategoryList initialCategories={categories || []} />
-      </main>
+      )}
     </div>
   );
 }

@@ -67,53 +67,53 @@ const ArchitectConsultForm = () => {
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-neutral-100 sticky top-24">
-      <div className="bg-neutral-900 p-8 text-white relative overflow-hidden">
+    <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-surface-muted sticky top-24">
+      <div className="bg-foreground p-8 text-white relative overflow-hidden">
         <Coffee className="absolute -right-8 -bottom-8 opacity-10 w-32 h-32 rotate-12" />
         <div className="relative z-10">
-          <span className="text-[10px] font-archivo uppercase tracking-[0.3em] text-neutral-400 mb-4 block">
+          <span className="text-[10px] font-archivo uppercase tracking-[0.3em] text-foreground-soft mb-4 block">
             Consultation
           </span>
           <h3 className="text-2xl font-archivo uppercase tracking-tight mb-2">
             Mulai Diskusi
           </h3>
-          <p className="text-neutral-400 text-sm font-light leading-relaxed">
+          <p className="text-foreground-soft text-sm font-normal leading-relaxed">
             Rencanakan hunian impian Anda bersama tim ahli arsitek dan
             kontraktor Titik Huni.
           </p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-8 space-y-4 bg-neutral-50/50">
+      <form onSubmit={handleSubmit} className="p-8 space-y-4 bg-surface/50">
         <div className="space-y-4">
           <div className="relative">
-            <User className="absolute left-4 top-3.5 w-4 h-4 text-neutral-400" />
+            <User className="absolute left-4 top-3.5 w-4 h-4 text-foreground-soft" />
             <input
               type="text"
               placeholder="Nama Anda"
               required
-              className="w-full pl-12 pr-4 py-3 bg-white border border-neutral-200 rounded-xl outline-none focus:border-black transition text-sm font-light"
+              className="w-full pl-12 pr-4 py-3 bg-white border border-border rounded-xl outline-none focus:border-black transition text-sm font-normal"
               value={form.nama}
               onChange={(e) => setForm({ ...form, nama: e.target.value })}
             />
           </div>
           <div className="relative">
-            <Phone className="absolute left-4 top-3.5 w-4 h-4 text-neutral-400" />
+            <Phone className="absolute left-4 top-3.5 w-4 h-4 text-foreground-soft" />
             <input
               type="tel"
               placeholder="WhatsApp"
               required
-              className="w-full pl-12 pr-4 py-3 bg-white border border-neutral-200 rounded-xl outline-none focus:border-black transition text-sm font-light"
+              className="w-full pl-12 pr-4 py-3 bg-white border border-border rounded-xl outline-none focus:border-black transition text-sm font-normal"
               value={form.whatsapp}
               onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
             />
           </div>
           <div className="relative">
-            <MapPin className="absolute left-4 top-3.5 w-4 h-4 text-neutral-400" />
+            <MapPin className="absolute left-4 top-3.5 w-4 h-4 text-foreground-soft" />
             <input
               type="text"
               placeholder="Lokasi Lahan (Kota)"
-              className="w-full pl-12 pr-4 py-3 bg-white border border-neutral-200 rounded-xl outline-none focus:border-black transition text-sm font-light"
+              className="w-full pl-12 pr-4 py-3 bg-white border border-border rounded-xl outline-none focus:border-black transition text-sm font-normal"
               value={form.lokasi_lahan}
               onChange={(e) =>
                 setForm({ ...form, lokasi_lahan: e.target.value })
@@ -121,7 +121,7 @@ const ArchitectConsultForm = () => {
             />
           </div>
           <select
-            className="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl outline-none focus:border-black transition text-sm font-light appearance-none"
+            className="w-full px-4 py-3 bg-white border border-border rounded-xl outline-none focus:border-black transition text-sm font-normal appearance-none"
             value={form.layanan}
             onChange={(e) => setForm({ ...form, layanan: e.target.value })}
           >
@@ -130,11 +130,11 @@ const ArchitectConsultForm = () => {
             <option>Hanya Pembangunan</option>
           </select>
           <div className="relative">
-            <MessageSquare className="absolute left-4 top-3.5 w-4 h-4 text-neutral-400" />
+            <MessageSquare className="absolute left-4 top-3.5 w-4 h-4 text-foreground-soft" />
             <textarea
               placeholder="Ceritakan rencana Anda..."
               rows={3}
-              className="w-full pl-12 pr-4 py-3 bg-white border border-neutral-200 rounded-xl outline-none focus:border-black transition text-sm font-light resize-none"
+              className="w-full pl-12 pr-4 py-3 bg-white border border-border rounded-xl outline-none focus:border-black transition text-sm font-normal resize-none"
               value={form.pesan}
               onChange={(e) => setForm({ ...form, pesan: e.target.value })}
             />
@@ -144,7 +144,7 @@ const ArchitectConsultForm = () => {
         <motion.button
           whileTap={{ scale: 0.98 }}
           disabled={isSubmitting}
-          className="w-full bg-neutral-900 text-white py-4 rounded-xl font-archivo uppercase tracking-widest text-xs hover:bg-black transition-all flex items-center justify-center gap-2"
+          className="w-full bg-foreground text-white py-4 rounded-xl font-archivo uppercase tracking-widest text-xs hover:bg-black transition-all flex items-center justify-center gap-2"
         >
           {isSubmitting ? (
             "Mengirim..."
@@ -154,7 +154,7 @@ const ArchitectConsultForm = () => {
             </>
           )}
         </motion.button>
-        <p className="text-[9px] text-center text-neutral-400 uppercase tracking-widest">
+        <p className="text-[9px] text-center text-foreground-soft uppercase tracking-widest">
           Respon tim kami dalam 1x24 Jam Kerja
         </p>
       </form>
@@ -197,14 +197,14 @@ export default function JasaBangun() {
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              <span className="text-[10px] font-archivo uppercase tracking-[0.5em] text-neutral-400 block mb-6">
+              <span className="text-[10px] font-archivo uppercase tracking-[0.5em] text-foreground-soft block mb-6">
                 Architecture & Build
               </span>
-              <h2 className="text-4xl md:text-6xl font-archivo uppercase leading-none tracking-tighter text-neutral-900 mb-8">
+              <h2 className="text-4xl md:text-6xl font-archivo uppercase leading-none tracking-tighter text-foreground mb-8">
                 Wujudkan Hunian <br />
-                <span className="text-neutral-300">Tanpa Kompromi.</span>
+                <span className="text-foreground-soft">Tanpa Kompromi.</span>
               </h2>
-              <p className="text-neutral-500 font-light text-lg leading-relaxed max-w-xl">
+              <p className="text-foreground-soft font-normal text-lg leading-relaxed max-w-xl">
                 Kami menemani perjalanan Anda dari selembar kertas sketsa hingga
                 serah terima kunci. Fokus kami adalah menciptakan ruang yang
                 tenang, cukup, dan berkarakter.
@@ -222,7 +222,7 @@ export default function JasaBangun() {
                   transition={{ delay: i * 0.1 }}
                   className="flex gap-6 group"
                 >
-                  <div className="w-14 h-14 shrink-0 bg-neutral-50 flex items-center justify-center rounded-2xl group-hover:bg-neutral-900 group-hover:text-white transition-all duration-500">
+                  <div className="w-14 h-14 shrink-0 bg-surface flex items-center justify-center rounded-2xl group-hover:bg-foreground group-hover:text-white transition-all duration-500">
                     {item.icon}
                   </div>
                   <div className="space-y-2">
@@ -230,11 +230,11 @@ export default function JasaBangun() {
                       <h4 className="font-archivo uppercase text-lg tracking-tight">
                         {item.title}
                       </h4>
-                      <span className="text-[10px] font-bold text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded uppercase">
+                      <span className="text-[10px] font-bold text-foreground-soft bg-surface-muted px-2 py-0.5 rounded uppercase">
                         {item.price}
                       </span>
                     </div>
-                    <p className="text-neutral-500 font-light text-sm leading-relaxed">
+                    <p className="text-foreground-soft font-normal text-sm leading-relaxed">
                       {item.desc}
                     </p>
                   </div>
@@ -243,26 +243,26 @@ export default function JasaBangun() {
             </div>
 
             {/* Benefit Bullets */}
-            <div className="grid grid-cols-2 gap-8 pt-8 border-t border-neutral-100">
+            <div className="grid grid-cols-2 gap-8 pt-8 border-t border-surface-muted">
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-neutral-900">
+                <div className="flex items-center gap-2 text-foreground">
                   <CheckCircle2 size={16} />
                   <span className="text-xs font-bold uppercase tracking-widest">
                     Garansi Struktur
                   </span>
                 </div>
-                <p className="text-[11px] text-neutral-400 leading-relaxed">
+                <p className="text-[11px] text-foreground-soft leading-relaxed">
                   Kami menjamin kekuatan konstruksi hingga 10 tahun pemakaian.
                 </p>
               </div>
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-neutral-900">
+                <div className="flex items-center gap-2 text-foreground">
                   <ShieldCheck size={16} />
                   <span className="text-xs font-bold uppercase tracking-widest">
                     Harga Transparan
                   </span>
                 </div>
-                <p className="text-[11px] text-neutral-400 leading-relaxed">
+                <p className="text-[11px] text-foreground-soft leading-relaxed">
                   RAB detail hingga baut terkecil. Tidak ada biaya siluman di
                   tengah jalan.
                 </p>

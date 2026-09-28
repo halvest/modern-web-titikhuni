@@ -1,206 +1,221 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { ArrowUpRight, Menu, MessageCircle, X } from "lucide-react";
+import { siteConfig } from "@/config/site";
 
-const WHATSAPP_URL =
-  "https://wa.me/6285190800168?text=Halo%20Titik%20Huni,%20saya%20ingin%20konsultasi%20mengenai%20hunian";
-
-const NAV_LINKS = [
+const links = [
   { name: "Beranda", href: "/" },
-  { name: "Tentang Kami", href: "/tentang-kami" },
-  { name: "Unit Kami", href: "/unit" },
-  { name: "Arsitek & Kontraktor", href: "/arsitek-kontraktor" },
+  { name: "Tentang kami", href: "/tentang-kami" },
+  { name: "Unit kami", href: "/unit" },
+  { name: "Proyek", href: "/proyek" },
+  { name: "Arsitek & kontraktor", href: "/arsitek-kontraktor" },
   { name: "Blog", href: "/blog" },
 ];
 
-export const Navbar = () => {
+const whatsapp = `https://wa.me/${siteConfig.organization.telephone.replace(/\D/g, "")}?text=${encodeURIComponent("Halo Titik Huni, saya ingin konsultasi mengenai hunian.")}`;
+
+function isCurrentRoute(pathname: string, href: string) {
+  return href === "/"
+    ? pathname === href
+    : pathname === href || pathname.startsWith(`${href}/`);
+}
+
+export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showNavbar, setShowNavbar] = useState(true);
   const [scrolled, setScrolled] = useState(false);
-
-  const lastScroll = useRef(0);
-  const ticking = useRef(false);
+  const header = useRef<HTMLElement>(null);
+  const toggle = useRef<HTMLButtonElement>(null);
+  const firstMobileLink = useRef<HTMLAnchorElement>(null);
   const pathname = usePathname();
+  const heroMode = pathname === "/" && !scrolled && !menuOpen;
 
-  // ✅ SUPER SMOOTH SCROLL HANDLER (RAF)
   useEffect(() => {
-    const updateScroll = () => {
-      const current = window.scrollY;
+    const updateHeader = () => setScrolled(window.scrollY > 12);
+    updateHeader();
+    window.addEventListener("scroll", updateHeader, { passive: true });
+    return () => window.removeEventListener("scroll", updateHeader);
+  }, []);
 
-      // background state (minimize re-render)
-      if (current > 20 !== scrolled) {
-        setScrolled(current > 20);
-      }
+  useEffect(() => setMenuOpen(false), [pathname]);
 
-      // hide/show navbar
-      if (current > lastScroll.current && current > 120 && !menuOpen) {
-        setShowNavbar(false);
-      } else {
-        setShowNavbar(true);
-      }
-
-      lastScroll.current = current;
-      ticking.current = false;
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 1280px)");
+    const closeDesktopMenu = (event: MediaQueryListEvent) => {
+      if (event.matches) setMenuOpen(false);
     };
 
-    const handleScroll = () => {
-      if (!ticking.current) {
-        window.requestAnimationFrame(updateScroll);
-        ticking.current = true;
+    desktop.addEventListener("change", closeDesktopMenu);
+    return () => desktop.removeEventListener("change", closeDesktopMenu);
+  }, []);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    firstMobileLink.current?.focus();
+
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (!header.current?.contains(event.target as Node)) {
+        setMenuOpen(false);
       }
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [menuOpen, scrolled]);
-
-  // close mobile menu on route change
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+    };
+  }, [menuOpen]);
 
   return (
-    <>
-      {/* ✅ SEO Breadcrumb Schema */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: NAV_LINKS.map((item, index) => ({
-              "@type": "ListItem",
-              position: index + 1,
-              name: item.name,
-              item: `https://titikhuni.id${item.href}`,
-            })),
-          }),
-        }}
-      />
-
-      {/* HEADER */}
-      <header
-        className={`fixed top-0 w-full z-[100] transition-transform duration-500 ${
-          showNavbar ? "translate-y-0" : "-translate-y-full"
-        }`}
-      >
-        {/* BACKGROUND (ANTI INVISIBLE) */}
-        <div
-          className={`transition-all duration-500 ${
-            scrolled
-              ? "bg-white/90 backdrop-blur-xl shadow-sm border-b border-neutral-200"
-              : "bg-white/80 backdrop-blur-md"
-          }`}
+    <header
+      ref={header}
+      className={`fixed inset-x-0 top-0 z-50 border-b transition-all duration-300 ${
+        heroMode
+          ? "border-white/10 bg-gradient-to-b from-black/45 to-black/10 text-white"
+          : "border-border/80 bg-white/[0.96] text-foreground shadow-[0_10px_35px_rgba(23,24,22,0.05)] backdrop-blur-[14px]"
+      }`}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && menuOpen) {
+          setMenuOpen(false);
+          toggle.current?.focus();
+        }
+      }}
+      onBlur={(event) => {
+        if (menuOpen && !event.currentTarget.contains(event.relatedTarget)) {
+          setMenuOpen(false);
+        }
+      }}
+    >
+      <div className="site-container flex h-[var(--header-height)] items-center justify-between gap-5">
+        <Link
+          href="/"
+          aria-label="Titik Huni — beranda"
+          onClick={() => setMenuOpen(false)}
+          className="relative z-10 inline-flex min-h-12 items-center"
         >
-          <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-20">
-            {/* LOGO */}
-            <Link href="/" className="relative z-[110]">
-              <Image
-                src="/assets/icons/dark-titik-huni.png"
-                alt="Developer Properti Premium Yogyakarta - Titik Huni"
-                width={140}
-                height={45}
-                priority
-                className="w-auto h-8 md:h-9 lg:h-10"
-              />
-            </Link>
+          <Image
+            src="/assets/icons/dark-titik-huni.png"
+            alt="Titik Huni"
+            width={678}
+            height={166}
+            preload
+            className={`h-auto w-[8.5rem] transition-[filter] duration-300 sm:w-[9.25rem] ${
+              heroMode ? "brightness-0 invert" : ""
+            }`}
+          />
+        </Link>
 
-            {/* DESKTOP NAV */}
-            <nav className="hidden md:flex items-center gap-10">
-              {NAV_LINKS.map((link) => {
-                const isActive = pathname === link.href;
+        <nav
+          aria-label="Navigasi utama"
+          className="hidden items-center gap-7 xl:flex"
+        >
+          {links.map((link) => {
+            const active = isCurrentRoute(pathname, link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={active ? "page" : undefined}
+                className={`relative inline-flex min-h-11 items-center text-[0.82rem] font-medium transition-colors after:absolute after:bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:transition-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 ${
+                  heroMode
+                    ? active
+                      ? "text-white after:scale-x-100 after:bg-white"
+                      : "text-white/75 after:scale-x-0 after:bg-white hover:text-white hover:after:scale-x-100"
+                    : active
+                      ? "text-primary after:scale-x-100 after:bg-primary"
+                      : "text-foreground-muted after:scale-x-0 after:bg-primary hover:text-foreground hover:after:scale-x-100"
+                }`}
+              >
+                {link.name}
+              </Link>
+            );
+          })}
+        </nav>
 
+        <div className="flex items-center gap-2">
+          <a
+            href={whatsapp}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden sm:inline-flex site-button-primary"
+          >
+            <MessageCircle size={16} strokeWidth={1.8} aria-hidden="true" />
+            Konsultasi
+            <ArrowUpRight size={16} aria-hidden="true" />
+          </a>
+          <button
+            ref={toggle}
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-label={menuOpen ? "Tutup menu" : "Buka menu"}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-navigation"
+            className={`relative z-10 flex h-11 w-11 items-center justify-center rounded-full border bg-white/[0.96] text-foreground transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 xl:hidden ${
+              heroMode
+                ? "border-white/40 hover:bg-white"
+                : "border-border hover:border-border-strong"
+            }`}
+          >
+            {menuOpen ? (
+              <X size={20} aria-hidden="true" />
+            ) : (
+              <Menu size={20} aria-hidden="true" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {menuOpen && (
+        <nav
+          id="mobile-navigation"
+          aria-label="Navigasi seluler"
+          className="pointer-events-none absolute inset-x-0 top-full z-50 pt-2 xl:hidden"
+        >
+          <div className="site-container">
+            <div className="pointer-events-auto ml-auto max-h-[calc(100dvh-var(--header-height)-1rem)] w-full max-w-sm overscroll-contain overflow-y-auto rounded-2xl border border-border bg-white p-3 shadow-[0_20px_60px_rgba(23,24,22,0.16)] sm:p-4">
+              {links.map((link, index) => {
+                const active = isCurrentRoute(pathname, link.href);
                 return (
                   <Link
-                    key={link.name}
+                    key={link.href}
+                    ref={index === 0 ? firstMobileLink : undefined}
                     href={link.href}
-                    className={`relative group text-[13px] font-medium tracking-wide transition-colors ${
-                      isActive
-                        ? "text-black"
-                        : "text-neutral-700 hover:text-black"
-                    }`}
+                    onClick={() => setMenuOpen(false)}
+                    aria-current={active ? "page" : undefined}
+                    className="group flex min-h-12 items-center justify-between gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                   >
-                    {link.name}
-
                     <span
-                      className={`absolute left-0 -bottom-1 h-[1.5px] bg-black transition-all duration-300 ${
-                        isActive ? "w-full" : "w-0 group-hover:w-full"
-                      }`}
+                      className={`text-base font-medium tracking-[-0.025em] ${active ? "text-primary" : "text-foreground"}`}
+                    >
+                      {link.name}
+                    </span>
+                    <ArrowUpRight
+                      size={17}
+                      className="shrink-0 text-foreground-soft transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground"
+                      aria-hidden="true"
                     />
                   </Link>
                 );
               })}
-
-              {/* CTA */}
-              <Link
-                href={WHATSAPP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-neutral-900 text-white px-7 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] rounded-full hover:bg-black hover:scale-[1.03] active:scale-95 transition-all shadow-md"
-              >
-                Konsultasi Gratis
-              </Link>
-            </nav>
-
-            {/* MOBILE BUTTON */}
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="Toggle Menu"
-              aria-expanded={menuOpen}
-              className="md:hidden p-2 text-neutral-800"
-            >
-              {menuOpen ? (
-                <X size={26} strokeWidth={1.5} />
-              ) : (
-                <Menu size={26} strokeWidth={1.5} />
-              )}
-            </button>
-          </div>
-
-          {/* MOBILE MENU */}
-          <div
-            className={`md:hidden transition-all duration-500 overflow-hidden ${
-              menuOpen ? "max-h-[500px] opacity-100 py-8" : "max-h-0 opacity-0"
-            }`}
-          >
-            <div className="px-8 flex flex-col gap-7">
-              {NAV_LINKS.map((link) => {
-                const isActive = pathname === link.href;
-
-                return (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    onClick={() => setMenuOpen(false)}
-                    className={`text-lg font-semibold transition-colors ${
-                      isActive
-                        ? "text-black"
-                        : "text-neutral-700 hover:text-black"
-                    }`}
-                  >
-                    {link.name}
-                  </Link>
-                );
-              })}
-
-              {/* MOBILE CTA */}
-              <Link
-                href={WHATSAPP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-neutral-900 text-white text-center py-4 rounded-xl font-semibold mt-2 active:scale-95 transition-all shadow-md"
-              >
-                Konsultasi Gratis
-              </Link>
+              <div className="mt-2 border-t border-border px-3 pt-3">
+                <a
+                  href={whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setMenuOpen(false)}
+                  className="site-button-primary w-full"
+                >
+                  <MessageCircle size={16} aria-hidden="true" />
+                  Mulai konsultasi
+                  <ArrowUpRight size={16} aria-hidden="true" />
+                </a>
+              </div>
             </div>
           </div>
-        </div>
-      </header>
-    </>
+        </nav>
+      )}
+    </header>
   );
-};
+}

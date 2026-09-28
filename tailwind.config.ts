@@ -12,7 +12,7 @@ const config: Config = {
     extend: {
       // 2. Integration dengan Variable Font dari Root Layout
       fontFamily: {
-        sans: ["var(--font-dm-sans)", "ui-sans-serif", "system-ui"],
+        sans: ["var(--font-manrope)", "ui-sans-serif", "system-ui"],
       },
 
       // 3. Container Strategy: Standardisasi Padding Global
@@ -29,6 +29,24 @@ const config: Config = {
 
       // 4. Custom Colors: Definisi Brand Identity
       colors: {
+        background: "var(--background)",
+        surface: {
+          DEFAULT: "var(--surface)",
+          muted: "var(--surface-muted)",
+        },
+        primary: {
+          DEFAULT: "var(--primary)",
+          hover: "var(--primary-hover)",
+        },
+        foreground: {
+          DEFAULT: "var(--foreground)",
+          muted: "var(--foreground-muted)",
+          soft: "var(--foreground-soft)",
+        },
+        border: {
+          DEFAULT: "var(--border)",
+          strong: "var(--border-strong)",
+        },
         // Emerald untuk accent/CTA (Growth Oriented)
         brand: {
           50: "#ecfdf5",

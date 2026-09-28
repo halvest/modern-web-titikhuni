@@ -1,18 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans } from "next/font/google";
+import { Manrope } from "next/font/google";
 import clsx from "clsx";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/next";
-import Script from "next/script";
 
 /* ================================
-FONT OPTIMIZATION (Zero Layout Shift)
+FONT — Manrope (single typeface system)
 ================================ */
-const dmSans = DM_Sans({
+const manrope = Manrope({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-dm-sans", // Gunakan CSS Variable untuk fleksibilitas
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-manrope",
   preload: true,
 });
 
@@ -22,13 +22,16 @@ VIEWPORT & THEME
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#065f46", // Menggunakan aksen Emerald agar selaras dengan brand
+  maximumScale: 5,
+  themeColor: "#234438",
 };
 
 /* ================================
 SEO GLOBAL METADATA
 ================================ */
-const SITE_URL = "https://titikhuni.id";
+import { siteConfig } from "@/config/site";
+
+const SITE_URL = siteConfig.url;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -115,131 +118,20 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const PIXEL_ID = "750363290827556";
-  const GTM_ID = "GTM-WT79LLNQ";
-
   return (
-    <html lang="id" dir="ltr" className="scroll-smooth">
+    <html
+      lang="id"
+      dir="ltr"
+      className="scroll-smooth"
+      data-scroll-behavior="smooth"
+    >
       <body
         className={clsx(
-          dmSans.variable,
-          dmSans.className,
-          "antialiased bg-white selection:bg-emerald-100 selection:text-emerald-900",
+          manrope.variable,
+          manrope.className,
+          "bg-background text-foreground antialiased selection:bg-emerald-100 selection:text-emerald-950"
         )}
       >
-        {/* GOOGLE TAG MANAGER */}
-        <Script
-          id="gtm-script"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','${GTM_ID}');
-            `,
-          }}
-        />
-
-        {/* META PIXEL */}
-        <Script
-          id="meta-pixel"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-            !function(f,b,e,v,n,t,s)
-            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-            n.queue=[];t=b.createElement(e);t.async=!0;
-            t.src=v;s=b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t,s)}
-            (window, document,'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '${PIXEL_ID}');
-            fbq('track', 'PageView');
-            `,
-          }}
-        />
-
-        {/* MICROSOFT CLARITY */}
-        <Script
-          id="clarity-script"
-          strategy="lazyOnload"
-          dangerouslySetInnerHTML={{
-            __html: `
-            (function(c,l,a,r,i,t,y){
-              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-            })(window, document, "clarity", "script", "uvr74fo44y");
-            `,
-          }}
-        />
-
-        {/* LOCAL BUSINESS & SERVICE STRUCTURED DATA (Local SEO Power) */}
-        <Script
-          id="schema-local-business"
-          type="application/ld+json"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@graph": [
-                {
-                  "@type": "RealEstateAgent",
-                  "@id": `${SITE_URL}/#organization`,
-                  name: "Titik Huni",
-                  url: SITE_URL,
-                  logo: `${SITE_URL}/assets/icons/dark-titik-huni.png`,
-                  image: `${SITE_URL}/og.jpg`,
-                  description:
-                    "Developer properti dan kontraktor di Yogyakarta yang fokus pada hunian modern minimalis.",
-                  address: {
-                    "@type": "PostalAddress",
-                    addressLocality: "Yogyakarta",
-                    addressRegion: "DIY",
-                    addressCountry: "ID",
-                  },
-                  geo: {
-                    "@type": "GeoCoordinates",
-                    latitude: -7.7956, // Ganti dengan koordinat kantor Anda jika ada
-                    longitude: 110.3695,
-                  },
-                  contactPoint: {
-                    "@type": "ContactPoint",
-                    telephone: "+62-851-9080-0168",
-                    contactType: "sales",
-                    areaServed: "ID",
-                    availableLanguage: "Indonesian",
-                  },
-                  sameAs: [
-                    "https://www.instagram.com/titikhuni.id",
-                    "https://www.facebook.com/titikhuni",
-                  ],
-                },
-                {
-                  "@type": "Service",
-                  serviceType: "Real Estate Development",
-                  provider: { "@id": `${SITE_URL}/#organization` },
-                  areaServed: { "@type": "State", name: "Yogyakarta" },
-                },
-              ],
-            }),
-          }}
-        />
-
-        {/* GTM FALLBACK */}
-        <noscript>
-          <iframe
-            src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
-            height="0"
-            width="0"
-            style={{ display: "none", visibility: "hidden" }}
-          ></iframe>
-        </noscript>
-
         {children}
 
         {/* Analytics & UI Tools */}
@@ -249,20 +141,9 @@ export default function RootLayout({
           toastOptions={{
             duration: 4000,
             className:
-              "text-sm font-medium border border-stone-100 shadow-xl rounded-2xl",
+              "text-sm font-medium border border-surface-muted shadow-xl rounded-2xl",
           }}
         />
-
-        {/* META PIXEL FALLBACK */}
-        <noscript>
-          <img
-            height="1"
-            width="1"
-            style={{ display: "none" }}
-            src={`https://www.facebook.com/tr?id=${PIXEL_ID}&ev=PageView&noscript=1`}
-            alt=""
-          />
-        </noscript>
       </body>
     </html>
   );

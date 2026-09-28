@@ -1,240 +1,339 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useRef, useState, type FormEvent } from "react";
+import {
+  ArrowUpRight,
+  Check,
+  Loader2,
+  MessageCircle,
+  ShieldCheck,
+} from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
-import { toast } from "react-hot-toast";
-import { Loader2, ArrowRight, MessageCircle, ShieldCheck } from "lucide-react";
-import { motion } from "framer-motion";
+import { siteConfig } from "@/config/site";
+import { homeUI as ui } from "@/components/marketing/home/design";
 
-// Interface untuk type-safety
-interface LeadFormData {
-  name: string;
-  phone: string;
-  message: string;
-  unit_id?: string; // Opsional jika form global
-}
-
-export const LeadForm = ({ unitId }: { unitId?: string }) => {
+export function LeadForm({ unitId }: { unitId?: string }) {
   const [loading, setLoading] = useState(false);
-  const supabase = createClient();
+  const [success, setSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<{
+    name?: string;
+    phone?: string;
+  }>({});
+  const submissionPending = useRef(false);
+  const whatsapp = `https://wa.me/${siteConfig.organization.telephone.replace(/\D/g, "")}?text=${encodeURIComponent("Halo Titik Huni, saya ingin konsultasi mengenai hunian.")}`;
 
-  const [formData, setFormData] = useState<LeadFormData>({
-    name: "",
-    phone: "",
-    message: "",
-  });
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (submissionPending.current) return;
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    const name = String(data.get("name") || "").trim();
+    const phone = String(data.get("phone") || "").replace(/[\s()-]/g, "");
+    const message = String(data.get("message") || "").trim();
 
-  const [meta, setMeta] = useState({
-    source_url: "",
-    utm_source: "website",
-  });
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      setMeta({
-        source_url: window.location.href,
-        utm_source: params.get("utm_source") || "website",
-      });
+    const errors: { name?: string; phone?: string } = {};
+    if (name.length < 2)
+      errors.name = "Tuliskan nama Anda, minimal 2 karakter.";
+    if (!/^\+?\d{10,15}$/.test(phone))
+      errors.phone = "Gunakan nomor WhatsApp yang valid, berisi 10–15 digit.";
+    setFieldErrors(errors);
+    setErrorMessage("");
+    if (errors.name || errors.phone) {
+      form
+        .querySelector<HTMLInputElement>(
+          errors.name ? "#contact-name" : "#contact-phone",
+        )
+        ?.focus();
+      return;
     }
-  }, []);
-
-  // Handler input yang lebih clean
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validasi Dasar (Minimal 10 digit untuk HP)
-    if (formData.phone.length < 10) {
-      return toast.error("Nomor WhatsApp tidak valid.");
-    }
-
+    submissionPending.current = true;
     setLoading(true);
-
+    setErrorMessage("");
     try {
+      const supabase = createClient();
       const { error } = await supabase.from("leads").insert([
         {
-          ...formData,
-          ...meta,
+          name,
+          phone,
+          message,
+          source_url: window.location.href,
+          utm_source:
+            new URLSearchParams(window.location.search).get("utm_source") ||
+            "website",
           unit_id: unitId || null,
           status: "new",
           source: "website",
         },
       ]);
-
       if (error) throw error;
-
-      // Pelacakan Konversi (Meta Pixel)
-      if (typeof window !== "undefined" && (window as any).fbq) {
-        (window as any).fbq("track", "Lead", {
-          content_name: formData.name,
-          status: "New",
-        });
+      setSuccess(true);
+      // Analytics must not turn a saved enquiry into a retryable form error.
+      const pixel = (
+        window as Window & { fbq?: (event: string, name: string) => void }
+      ).fbq;
+      try {
+        pixel?.("track", "Lead");
+      } catch {
+        /* The enquiry is already saved. */
       }
-
-      toast.success(
-        "Visi Anda telah kami catat. Konsultan kami akan segera menghubungi.",
+    } catch {
+      setErrorMessage(
+        "Pesan belum terkirim. Coba lagi atau hubungi kami melalui WhatsApp. Isian Anda tetap tersimpan di formulir ini.",
       );
-      setFormData({ name: "", phone: "", message: "" });
-    } catch (error: any) {
-      console.error("Submission Error:", error.message);
-      toast.error("Gagal mengirim pesan. Silakan coba lagi nanti.");
     } finally {
+      submissionPending.current = false;
       setLoading(false);
     }
-  };
+  }
 
   return (
-    <section
-      id="contact"
-      className="py-24 md:py-32 bg-[#FCFCFB] relative overflow-hidden"
-    >
-      {/* Dekorasi Background untuk kesan Premium */}
-      <div className="absolute top-0 right-0 w-1/2 h-full bg-emerald-50/30 -skew-x-12 translate-x-32 z-0" />
-
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="grid lg:grid-cols-12 gap-16 items-center">
-          {/* SISI KIRI: Value Proposition */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="lg:col-span-5 space-y-10"
+    <section id="kontak" className={ui.section} aria-labelledby="contact-title">
+      <div
+        className={`${ui.container} grid items-start gap-10 lg:grid-cols-2 lg:gap-20`}
+      >
+        <div className="lg:py-8">
+          <p className={ui.eyebrow}>Konsultasi & survei</p>
+          <h2 id="contact-title" className={ui.heading}>
+            Temukan rumah
+            <br />
+            yang sesuai untuk Anda.
+          </h2>
+          <p className={`${ui.copy} mt-6 max-w-lg`}>
+            Sampaikan lokasi, anggaran, atau unit yang Anda minati. Tim Titik
+            Huni akan menghubungi Anda melalui WhatsApp untuk membahas kebutuhan
+            dan mengonfirmasi jadwal survei.
+          </p>
+          <div className="mt-8 flex items-start gap-4 border-t border-border pt-8">
+            <MessageCircle
+              size={24}
+              className="mt-1 shrink-0 text-emerald-700"
+              aria-hidden="true"
+            />
+            <div>
+              <p className="text-base text-foreground-muted">
+                Ingin bertanya langsung?
+              </p>
+              <a
+                href={whatsapp}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={ui.link}
+              >
+                WhatsApp 0851 9080 0168{" "}
+                <ArrowUpRight size={18} aria-hidden="true" />
+              </a>
+            </div>
+          </div>
+        </div>
+        {success ? (
+          <div
+            className="rounded-lg border border-emerald-200 bg-emerald-50 p-6 sm:p-8"
+            role="status"
+            aria-live="polite"
           >
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-700">
-                  Online Consultation
-                </span>
-              </div>
-              <h2 className="text-4xl md:text-6xl font-medium tracking-tight text-stone-900 leading-[1.05]">
-                Mulai langkah <br />
-                <span className="text-stone-400 italic font-light">
-                  hunian impian.
-                </span>
-              </h2>
-              <p className="text-stone-500 text-lg leading-relaxed max-w-md font-light">
-                Dapatkan estimasi biaya, pemilihan material, hingga strategi
-                investasi properti terbaik langsung dari ahlinya.
+            <Check
+              size={32}
+              className="mb-6 text-emerald-700"
+              aria-hidden="true"
+            />
+            <h3 className="text-2xl font-semibold tracking-tight text-foreground">
+              Permintaan berhasil dikirim.
+            </h3>
+            <p className="mt-4 text-base leading-7 text-foreground-muted">
+              Tim Titik Huni akan menghubungi nomor WhatsApp yang Anda cantumkan
+              untuk membahas kebutuhan Anda. Jika meminta survei, jadwal
+              kunjungan akan dikonfirmasi terlebih dahulu.
+            </p>
+            <a
+              href={whatsapp}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${ui.link} mt-6`}
+            >
+              Lanjutkan lewat WhatsApp{" "}
+              <ArrowUpRight size={18} aria-hidden="true" />
+            </a>
+            <button
+              type="button"
+              className="mt-4 block min-h-12 text-base font-medium text-foreground-muted underline underline-offset-4"
+              onClick={() => setSuccess(false)}
+            >
+              Kirim permintaan lain
+            </button>
+          </div>
+        ) : (
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            className="space-y-6 rounded-lg border border-border bg-surface p-6 sm:p-8"
+            aria-label="Formulir konsultasi"
+            aria-busy={loading}
+          >
+            <div>
+              <h3 className="text-2xl font-semibold tracking-tight">
+                Ceritakan kebutuhan Anda
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-foreground-muted">
+                Isi nama dan nomor WhatsApp. Detail lainnya opsional.
               </p>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-5 border border-stone-100 bg-white rounded-2xl flex items-center gap-4 shadow-sm">
-                <div className="w-10 h-10 rounded-full bg-stone-50 flex items-center justify-center text-emerald-600">
-                  <ShieldCheck size={20} />
-                </div>
-                <p className="text-xs font-medium text-stone-600 uppercase tracking-tighter">
-                  Data Terproteksi
-                </p>
-              </div>
-              <div className="p-5 border border-stone-100 bg-white rounded-2xl flex items-center gap-4 shadow-sm group cursor-pointer hover:border-emerald-200 transition-all">
-                <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
-                  <MessageCircle size={20} />
-                </div>
-                <div>
-                  <p className="text-[9px] uppercase tracking-widest text-stone-400">
-                    WhatsApp
-                  </p>
-                  <p className="text-sm font-semibold text-stone-900 tracking-tight">
-                    0851-9080-0168
-                  </p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* SISI KANAN: Form (Premium Glass Card) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="lg:col-span-7"
-          >
-            <div className="bg-white border border-stone-200/60 rounded-[32px] p-8 md:p-12 shadow-2xl shadow-stone-200/50">
-              <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-stone-500 ml-1">
-                      Nama Lengkap
-                    </label>
-                    <input
-                      required
-                      name="name"
-                      type="text"
-                      placeholder="Contoh: Hasyim Adani"
-                      className="w-full bg-stone-50 border-none rounded-2xl px-6 py-4 text-stone-900 placeholder:text-stone-300 focus:ring-2 focus:ring-emerald-500/20 transition-all outline-none"
-                      value={formData.name}
-                      onChange={handleChange}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-stone-500 ml-1">
-                      Nomor WhatsApp
-                    </label>
-                    <input
-                      required
-                      name="phone"
-                      type="tel"
-                      placeholder="0812xxxx"
-                      className="w-full bg-stone-50 border-none rounded-2xl px-6 py-4 text-stone-900 placeholder:text-stone-300 focus:ring-2 focus:ring-emerald-500/20 transition-all outline-none"
-                      value={formData.phone}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-stone-500 ml-1">
-                    Pesan (Opsional)
-                  </label>
-                  <textarea
-                    name="message"
-                    rows={4}
-                    placeholder="Apa yang bisa kami bantu hari ini?"
-                    className="w-full bg-stone-50 border-none rounded-2xl px-6 py-4 text-stone-900 placeholder:text-stone-300 focus:ring-2 focus:ring-emerald-500/20 transition-all outline-none resize-none"
-                    value={formData.message}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <button
-                  disabled={loading}
-                  type="submit"
-                  className="w-full group bg-stone-900 hover:bg-emerald-600 disabled:bg-stone-300 text-white rounded-2xl py-5 px-8 flex items-center justify-center gap-4 transition-all duration-500 shadow-xl shadow-stone-900/10"
+            <div>
+              <label
+                htmlFor="contact-name"
+                className="mb-2 block text-base font-semibold"
+              >
+                Nama lengkap{" "}
+                <span className="font-normal text-foreground-soft">(wajib)</span>
+              </label>
+              <input
+                id="contact-name"
+                name="name"
+                required
+                minLength={2}
+                maxLength={100}
+                autoComplete="name"
+                placeholder="Nama Anda"
+                disabled={loading}
+                className={ui.input}
+                aria-invalid={!!fieldErrors.name}
+                aria-describedby={
+                  fieldErrors.name ? "contact-name-error" : undefined
+                }
+                onChange={() => {
+                  if (fieldErrors.name)
+                    setFieldErrors((previous) => ({
+                      ...previous,
+                      name: undefined,
+                    }));
+                }}
+              />
+              {fieldErrors.name && (
+                <p
+                  id="contact-name-error"
+                  role="alert"
+                  className="mt-2 text-sm text-red-700"
                 >
-                  {loading ? (
-                    <Loader2 className="animate-spin" size={20} />
-                  ) : (
-                    <>
-                      <span className="text-xs font-bold uppercase tracking-[0.2em]">
-                        Kirim Permintaan Konsultasi
-                      </span>
-                      <ArrowRight
-                        size={18}
-                        className="group-hover:translate-x-2 transition-transform"
-                      />
-                    </>
-                  )}
-                </button>
-
-                <p className="text-center text-[10px] text-stone-400 font-light italic">
-                  *Dengan menekan tombol, Anda menyetujui kebijakan privasi
-                  kami.
+                  {fieldErrors.name}
                 </p>
-              </form>
+              )}
             </div>
-          </motion.div>
-        </div>
+            <div>
+              <label
+                htmlFor="contact-phone"
+                className="mb-2 block text-base font-semibold"
+              >
+                Nomor WhatsApp{" "}
+                <span className="font-normal text-foreground-soft">(wajib)</span>
+              </label>
+              <input
+                id="contact-phone"
+                name="phone"
+                type="tel"
+                inputMode="tel"
+                required
+                maxLength={22}
+                autoComplete="tel"
+                placeholder="Contoh: 081234567890"
+                disabled={loading}
+                className={ui.input}
+                aria-invalid={!!fieldErrors.phone}
+                aria-describedby={`contact-phone-hint${fieldErrors.phone ? " contact-phone-error" : ""}`}
+                onChange={() => {
+                  if (fieldErrors.phone)
+                    setFieldErrors((previous) => ({
+                      ...previous,
+                      phone: undefined,
+                    }));
+                }}
+              />
+              <p
+                id="contact-phone-hint"
+                className="mt-2 text-sm text-foreground-muted"
+              >
+                Untuk membahas kebutuhan dan mengonfirmasi jadwal survei.
+              </p>
+              {fieldErrors.phone && (
+                <p
+                  id="contact-phone-error"
+                  role="alert"
+                  className="mt-2 text-sm text-red-700"
+                >
+                  {fieldErrors.phone}
+                </p>
+              )}
+            </div>
+            <div>
+              <label
+                htmlFor="contact-message"
+                className="mb-2 block text-base font-semibold"
+              >
+                Kebutuhan Anda{" "}
+                <span className="font-normal text-foreground-soft">(opsional)</span>
+              </label>
+              <textarea
+                id="contact-message"
+                name="message"
+                rows={3}
+                maxLength={2000}
+                placeholder="Misalnya: rumah di Sleman, anggaran 800 juta, ingin survei akhir pekan."
+                disabled={loading}
+                className={`${ui.input} resize-y`}
+              />
+            </div>
+            <div className="flex items-start gap-3 text-sm leading-6 text-foreground-muted">
+              <ShieldCheck
+                size={20}
+                className="mt-0.5 shrink-0 text-emerald-700"
+                aria-hidden="true"
+              />
+              <p>
+                Dengan mengirim formulir, Anda mengizinkan tim Titik Huni
+                menggunakan kontak ini untuk menindaklanjuti kebutuhan yang Anda
+                sampaikan.
+              </p>
+            </div>
+            {errorMessage && (
+              <div
+                role="alert"
+                className="rounded-md border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-800"
+              >
+                {errorMessage}
+                <a
+                  href={whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 flex min-h-12 items-center gap-2 font-semibold underline"
+                >
+                  Hubungi melalui WhatsApp{" "}
+                  <ArrowUpRight size={16} aria-hidden="true" />
+                </a>
+              </div>
+            )}
+            <button
+              disabled={loading}
+              type="submit"
+              className={`${ui.primary} w-full`}
+            >
+              {loading ? (
+                <>
+                  Mengirim permintaan…{" "}
+                  <Loader2
+                    size={18}
+                    className="motion-safe:animate-spin"
+                    aria-hidden="true"
+                  />
+                </>
+              ) : (
+                <>
+                  Kirim permintaan konsultasi{" "}
+                  <ArrowUpRight size={18} aria-hidden="true" />
+                </>
+              )}
+            </button>
+          </form>
+        )}
       </div>
     </section>
   );
-};
+}

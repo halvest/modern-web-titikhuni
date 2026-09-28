@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -24,4 +25,45 @@ export async function createClient() {
       },
     },
   );
+}
+
+export async function getAdminContext() {
+  const supabase = await createClient();
+  const { data, error: claimsError } = await supabase.auth.getClaims();
+  const userId = data?.claims?.sub;
+
+  if (claimsError || !userId) {
+    throw new Error("Sesi berakhir. Silakan masuk kembali.");
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (profileError || profile?.role !== "admin") {
+    throw new Error("Akses admin diperlukan.");
+  }
+
+  return {
+    supabase,
+    user: {
+      id: userId,
+      email: typeof data.claims.email === "string" ? data.claims.email : null,
+    },
+  };
+}
+
+export async function verifyAdmin() {
+  const { supabase } = await getAdminContext();
+  return supabase;
+}
+
+export async function requireAdminPage() {
+  try {
+    return await getAdminContext();
+  } catch {
+    redirect("/admin/login");
+  }
 }

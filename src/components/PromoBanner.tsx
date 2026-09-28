@@ -23,7 +23,7 @@ export const PromoBanner = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-amber-200 via-yellow-200 to-amber-300" />
 
           <div className="relative container mx-auto px-4 py-2">
-            <div className="relative text-slate-900 text-center">
+            <div className="relative text-foreground text-center">
               <p className="text-sm sm:text-base font-medium leading-snug">
                 <span className="block font-semibold">
                   Wujudkan resolusi 2026 dengan aset produktif & passive income
@@ -36,7 +36,7 @@ export const PromoBanner = () => {
                 aria-label="Tutup informasi"
                 className="absolute right-0 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:bg-white/30 transition"
               >
-                <X className="h-4 w-4 text-slate-700" />
+                <X className="h-4 w-4 text-foreground-muted" />
               </button>
             </div>
           </div>

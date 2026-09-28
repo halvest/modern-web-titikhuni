@@ -22,7 +22,18 @@ const STATUS_OPTIONS = [
   { label: "Lost", value: "lost", color: "bg-stone-100 text-stone-400" },
 ];
 
-export function LeadsList({ initialLeads }: { initialLeads: any[] }) {
+type LegacyLead = {
+  id: string;
+  name: string;
+  phone: string | null;
+  message?: string | null;
+  status?: string | null;
+  utm_source?: string | null;
+  source_url?: string | null;
+  created_at: string;
+};
+
+export function LeadsList({ initialLeads }: { initialLeads: LegacyLead[] }) {
   const [leads, setLeads] = useState(initialLeads);
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -32,7 +43,7 @@ export function LeadsList({ initialLeads }: { initialLeads: any[] }) {
         filterStatus === "all" || lead.status === filterStatus;
       const matchesSearch =
         lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.phone.includes(searchTerm);
+        (lead.phone || "").includes(searchTerm);
       return matchesStatus && matchesSearch;
     });
   }, [leads, filterStatus, searchTerm]);

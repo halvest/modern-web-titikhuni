@@ -3,21 +3,62 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 
-export async function loginAction(formData: FormData) {
-  const supabase = await createClient();
+export type LoginError =
+  | "invalid_credentials"
+  | "unauthorized"
+  | "profile_missing"
+  | "profile_error"
+  | "validation_error"
+  | "session_expired"
+  | "server_error"
+  | null;
 
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
+export type LoginState = {
+  error: LoginError;
+};
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+export async function loginAction(
+  prevState: LoginState,
+  formData: FormData
+): Promise<LoginState> {
+  const email = String(formData.get("email") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
 
-  if (error) {
-    return { error: error.message };
+  if (!email || !password) {
+    return { error: "validation_error" };
   }
 
-  // Redirect dilakukan di server untuk memastikan session cookie ter-set dengan benar
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error || !data.user) {
+      return { error: "invalid_credentials" };
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", data.user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      await supabase.auth.signOut();
+      return { error: "profile_error" };
+    }
+
+    if (!profile) {
+      await supabase.auth.signOut();
+      return { error: "profile_missing" };
+    }
+
+    if (profile.role !== "admin") {
+      await supabase.auth.signOut();
+      return { error: "unauthorized" };
+    }
+  } catch {
+    return { error: "server_error" };
+  }
+
   redirect("/admin/dashboard");
 }

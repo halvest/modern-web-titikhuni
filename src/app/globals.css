@@ -2,34 +2,71 @@
 @tailwind components;
 @tailwind utilities;
 
-/* --- 1. Root & Variable System --- */
+/* ================================================
+   COLOR TOKENS
+   ================================================ */
 :root {
-  --foreground-rgb: 23, 23, 23; /* Stone-900 */
-  --background-rgb: 252, 252, 251; /* Off-white premium */
+  --background: #FFFFFF;
+  --surface: #FAFAF8;
+  --surface-muted: #F5F5F2;
+  --primary: #234438;
+  --primary-hover: #19352B;
+  --foreground: #171816;
+  --foreground-muted: #666863;
+  --foreground-soft: #92938F;
+  --border: #E7E7E3;
+  --border-strong: #D8D9D4;
+  --header-height: 4.5rem;
 
-  /* Fluid Typography & Spacing jika diperlukan */
-  --header-height: 80px;
+  /* Global Homepage Canvas Palette */
+  --canvas: #FCFDFB;
+  --ivory: #FAFCF9;
+  --warm: #FFFFFF;
+  --sage: #EDF5EE;
+  --mist: #E7F0E8;
+  --footer-tone: #F7FAF7;
 }
 
-/* --- 2. Base Layer Styles --- */
+/* ================================================
+   BASE LAYER
+   ================================================ */
 @layer base {
   * {
-    @apply border-stone-200;
+    border-color: var(--border);
   }
 
   html {
+    width: 100%;
+    height: 100%;
+    margin: 0;
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
   }
 
   body {
-    background-color: rgb(var(--background-rgb));
-    color: rgb(var(--foreground-rgb));
-    @apply antialiased selection:bg-emerald-100 selection:text-emerald-900;
-    font-feature-settings: "cv02", "cv03", "cv04", "ss01";
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    background-color: var(--background);
+    color: var(--foreground);
+    @apply antialiased selection:bg-emerald-100 selection:text-emerald-950;
+    /* Manrope OpenType features: contextual alternates, stylistic set 01 */
+    font-feature-settings: "calt", "ss01";
+    text-rendering: optimizeLegibility;
+    font-size: 1rem;
+    line-height: 1.7;
+    letter-spacing: -0.01em;
   }
 
-  /* Custom Scrollbar for Premium Feel */
+  /* ---- Heading defaults (all headings: Manrope, no italic, no serif) ---- */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+
+  /* ---- Scrollbar ---- */
   ::-webkit-scrollbar {
     @apply w-1.5;
   }
@@ -37,33 +74,86 @@
     @apply bg-transparent;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-stone-200 rounded-full hover:bg-stone-300 transition-colors;
-  }
-
-  /* Typography Hierarchy */
-  h1,
-  h2,
-  h3,
-  h4 {
-    @apply tracking-tighter font-medium;
+    @apply bg-surface-muted rounded-full hover:bg-foreground-soft transition-colors;
   }
 }
 
-/* --- 3. Component Layer (Re-usable Patterns) --- */
+/* ================================================
+   COMPONENT LAYER
+   ================================================ */
 @layer components {
-  /* Ultra-Modern Glassmorphism */
+  /* --- Layout utilities --- */
+  .site-container {
+    @apply mx-auto w-full max-w-[90rem] px-5 sm:px-7 lg:px-10 xl:px-12;
+  }
+
+  .site-section {
+    @apply py-20 md:py-28 lg:py-32;
+  }
+
+  /* --- Eyebrow label (small all-caps category label) --- */
+  .site-eyebrow {
+    @apply inline-flex items-center gap-3 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-foreground-soft;
+  }
+
+  .site-eyebrow::before {
+    content: "";
+    @apply size-1.5 shrink-0 rounded-full bg-current opacity-75;
+  }
+
+  /* --- Display headline utility (hero-scale) --- */
+  .site-display {
+    font-size: clamp(3rem, 7vw, 6.75rem);
+    font-weight: 500;
+    line-height: 0.97;
+    letter-spacing: -0.055em;
+    @apply text-wrap-balance;
+  }
+
+  /* --- Section headline utility --- */
+  .site-heading {
+    font-size: clamp(2.25rem, 4.5vw, 4.5rem);
+    font-weight: 500;
+    line-height: 1.03;
+    letter-spacing: -0.045em;
+    @apply text-wrap-balance;
+  }
+
+  /* --- Button System (Architectural & Editorial) --- */
+  .site-button-primary {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2.5 rounded-[11px] bg-primary px-5 py-2.5 text-[14px] font-medium text-white transition-all duration-300 hover:bg-primary-hover active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary;
+  }
+
+  .site-button-secondary {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2.5 rounded-[11px] border border-border-strong bg-transparent px-5 py-2.5 text-[14px] font-medium text-foreground transition-all duration-300 hover:border-foreground hover:bg-surface-muted active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary;
+  }
+
+  .site-button-hero {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2.5 rounded-[11px] bg-white px-6 py-3 text-[14px] font-medium text-foreground transition-all duration-300 hover:bg-[#FAFCF9] active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white;
+  }
+
+  .site-link-editorial {
+    @apply relative inline-flex items-center gap-2 text-[14px] font-medium text-foreground transition-colors duration-300 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary;
+  }
+  .site-link-editorial::after {
+    content: '';
+    @apply absolute -bottom-1 left-0 h-[1.5px] w-full origin-left scale-x-0 bg-primary transition-transform duration-300;
+  }
+  .site-link-editorial:hover::after {
+    @apply scale-x-100;
+  }
+
+  /* --- Legacy utility aliases (keep for compat) --- */
   .glass-effect {
     @apply bg-white/70 backdrop-blur-md border-b border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.03)];
   }
 
-  /* Premium Card Effect */
   .card-premium {
-    @apply bg-white border border-stone-200/60 rounded-[2rem] p-8 
+    @apply bg-white border border-border/60 rounded-[2rem] p-8
            transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]
            hover:-translate-y-1;
   }
 
-  /* Layout Utilities */
   .container-custom {
     @apply max-w-7xl mx-auto px-6 md:px-12 lg:px-16;
   }
@@ -72,22 +162,54 @@
     @apply py-24 md:py-32 lg:py-40;
   }
 
-  /* Modern Input Style */
   .input-base {
-    @apply w-full bg-stone-50 border-none rounded-2xl px-6 py-4 
-           text-stone-900 placeholder:text-stone-300 
+    @apply w-full bg-surface border-none rounded-2xl px-6 py-4
+           text-foreground placeholder:text-foreground-soft
            focus:ring-2 focus:ring-emerald-500/20 transition-all outline-none;
   }
 }
 
-/* --- 4. Utilities & Advanced Animations --- */
+/* ================================================
+   UTILITY LAYER
+   ================================================ */
 @layer utilities {
-  /* Text Balance untuk Headline yang lebih cantik */
   .text-balance {
     text-wrap: balance;
   }
 
-  /* Shimmer Effect untuk Loading States (Skeleton) */
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* REMOVED: .font-editorial — Playfair Display is no longer used */
+
+  .bg-site-canvas {
+    background-color: var(--surface);
+  }
+
+  .bg-site-paper {
+    background-color: var(--background);
+  }
+
+  .text-site-forest {
+    color: var(--primary);
+  }
+
+  .scrollbar-hide {
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .architectural-grid {
+    background-image:
+      linear-gradient(to right, rgba(24, 26, 23, 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(24, 26, 23, 0.045) 1px, transparent 1px);
+    background-size: 4rem 4rem;
+  }
+
   .animate-shimmer {
     background: linear-gradient(
       90deg,
@@ -99,28 +221,77 @@
     animation: shimmer 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Subtle Noise Texture Overlay (Opsional untuk kesan Premium) */
-  .noise-bg {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3Client ... %3E");
+  /* ================================================
+     UNIFIED HOMEPAGE CONTENT CANVAS
+     Used ONLY after Hero. Dominant white with very faint sage gradients.
+     ================================================ */
+  .home-content-canvas {
+    background-color: #FCFDFB;
+    background-image:
+      radial-gradient(
+        70rem 55rem at 90% 10%,
+        rgba(190, 219, 194, 0.12),
+        transparent 72%
+      ),
+      radial-gradient(
+        75rem 60rem at 5% 45%,
+        rgba(210, 231, 211, 0.08),
+        transparent 72%
+      ),
+      radial-gradient(
+        65rem 55rem at 80% 78%,
+        rgba(190, 218, 194, 0.10),
+        transparent 74%
+      );
+  }
+
+  /* ---- Scroll reveal ---- */
+  .reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    will-change: opacity, transform;
+  }
+
+  .reveal-on-scroll.reveal-visible {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
+/* ================================================
+   KEYFRAMES
+   ================================================ */
 @keyframes shimmer {
-  from {
-    background-position: 200% 0;
-  }
-  to {
-    background-position: -200% 0;
-  }
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
 }
 
-/* --- 5. Fixes for Next.js Image & Third Party --- */
+/* ================================================
+   GLOBAL ELEMENT STYLES
+   ================================================ */
 img {
   @apply h-auto max-w-full;
 }
 
-/* Menghilangkan ring biru saat klik di mobile */
-button:focus,
-a:focus {
-  @apply outline-none;
+/* Keyboard navigation — all interactive elements */
+:is(a, button, summary, input, textarea, select):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

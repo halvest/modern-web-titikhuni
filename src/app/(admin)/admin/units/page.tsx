@@ -1,186 +1,182 @@
-import { createClient } from "@/utils/supabase/server";
+// src/app/(admin)/admin/units/page.tsx
+import { requireAdminPage } from "@/utils/supabase/server";
 import Link from "next/link";
-import Image from "next/image";
-import { Plus, Edit, ExternalLink, MapPin, Search } from "lucide-react";
+import { Plus, Home, CheckCircle2, Clock, PackageX } from "lucide-react";
 import { formatRupiah } from "@/lib/formatRupiah";
-import { DeleteButton } from "./DeleteButton";
+import dayjs from "dayjs";
+import "dayjs/locale/id";
+import relativeTime from "dayjs/plugin/relativeTime";
+import UnitsWorkspace from "./UnitsWorkspace";
+
+dayjs.extend(relativeTime);
+dayjs.locale("id");
+
+export const dynamic = "force-dynamic";
+
+type Unit = {
+  id: string;
+  title: string;
+  slug: string;
+  location: string | null;
+  price: number;
+  status: string;
+  image_url: string | null;
+  category_id: string | null;
+  land_area: number | null;
+  bedroom_count: number | null;
+  bathroom_count: number | null;
+  seo_title: string | null;
+  meta_description: string | null;
+  is_indexed: boolean | null;
+  og_image: string | null;
+  is_featured: boolean;
+  featured_order: number | null;
+  updated_at: string | null;
+  categories: { id: string; name: string } | { id: string; name: string }[] | null;
+};
+
+type Category = { id: string; name: string };
 
 export default async function UnitsPage() {
-  const supabase = await createClient();
-  const { data: units } = await supabase
-    .from("units")
-    .select("*")
-    .is("deleted_at", null)
-    .order("priority_order", { ascending: true });
+  const { supabase } = await requireAdminPage();
+
+  const [{ data: units, error: unitsError }, { data: categories, error: categoriesError }] = await Promise.all([
+    supabase
+      .from("units")
+      .select(
+        "id, title, slug, location, price, status, image_url, category_id, land_area, bedroom_count, bathroom_count, seo_title, meta_description, is_indexed, og_image, is_featured, featured_order, updated_at, categories(id, name)"
+      )
+      .is("deleted_at", null)
+      .order("priority_order", { ascending: true }),
+    supabase.from("categories").select("id, name").order("name"),
+  ]);
+
+  const allUnits = (units as unknown as Unit[]) ?? [];
+  const unitsWithUpdatedLabels = allUnits.map((unit) => ({
+    ...unit,
+    updated_label: unit.updated_at ? dayjs(unit.updated_at).fromNow() : "—",
+  }));
+  const allCategories = (categories as Category[]) ?? [];
+
+  // Server-side KPI computation
+  const total = allUnits.length;
+  const available = allUnits.filter((u) => u.status === "Tersedia").length;
+  const booked = allUnits.filter((u) => u.status === "Booked").length;
+  const sold = allUnits.filter(
+    (u) => u.status === "Sold" || u.status === "Terjual"
+  ).length;
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto space-y-10 animate-in fade-in duration-700">
-      {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div className="max-w-[1400px] mx-auto space-y-8 sm:space-y-10 w-full pb-10">
+
+      {/* Page Header */}
+      <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5 border-b border-slate-200/60 pb-6">
         <div>
-          <h1 className="text-4xl font-black uppercase tracking-tighter text-neutral-900 leading-none">
-            Katalog <span className="text-neutral-300">Properti</span>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600 mb-2">
+            Manajemen Properti
+          </p>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+            Unit & <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">Listing</span>
           </h1>
-          <p className="text-[10px] text-neutral-400 mt-3 font-bold uppercase tracking-[0.3em]">
-            Manajemen listing unit dan inventaris Titik Huni
+          <p className="text-sm font-medium text-slate-500 mt-2">
+            Kelola data properti, harga, media visual, dan visibilitas pencarian (SEO).
           </p>
         </div>
-
         <Link
           href="/admin/units/new"
-          className="bg-black text-white px-8 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-neutral-800 transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-black/10"
+          className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:shadow-[0_8px_25px_rgb(0,0,0,0.15)] focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 self-start sm:self-auto"
         >
-          <Plus size={16} strokeWidth={3} /> Tambah Unit Baru
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/10 to-emerald-500/0 translate-x-[-100%] transition-transform duration-500 group-hover:translate-x-[100%]" />
+          <span className="relative flex items-center gap-2">
+            <span className="text-lg leading-none mt-[-2px]">+</span> Tambah Unit
+          </span>
         </Link>
-      </div>
+      </header>
 
-      {/* TABLE */}
-      <div className="bg-white rounded-[32px] border border-neutral-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-neutral-50/50 border-b border-neutral-100">
-                <th className="px-8 py-6 text-[10px] uppercase tracking-widest font-black text-neutral-400">
-                  Info Unit
-                </th>
-                <th className="px-8 py-6 text-[10px] uppercase tracking-widest font-black text-neutral-400">
-                  Harga & Spesifikasi
-                </th>
-                <th className="px-8 py-6 text-[10px] uppercase tracking-widest font-black text-neutral-400">
-                  Status
-                </th>
-                <th className="px-8 py-6 text-[10px] uppercase tracking-widest font-black text-neutral-400 text-right">
-                  Manajemen
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-50">
-              {units && units.length > 0 ? (
-                units.map((unit) => (
-                  <tr
-                    key={unit.id}
-                    className="hover:bg-neutral-50/50 transition-all group"
-                  >
-                    <td className="px-8 py-6">
-                      <div className="flex items-center gap-5">
-                        <div className="relative w-20 h-14 rounded-xl overflow-hidden bg-neutral-100 shrink-0 shadow-sm">
-                          <Image
-                            src={
-                              unit.image_url || "/assets/images/placeholder.jpg"
-                            }
-                            alt={unit.title}
-                            fill
-                            className="object-cover group-hover:scale-110 transition-transform duration-500"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <h3 className="text-sm font-black uppercase tracking-tight text-neutral-900 leading-none">
-                            {unit.title}
-                          </h3>
-                          <div className="flex items-center gap-1.5 text-neutral-400">
-                            <MapPin size={10} />
-                            <span className="text-[10px] font-bold uppercase tracking-wider">
-                              {unit.location}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className="px-8 py-6">
-                      <div className="space-y-1">
-                        <p className="text-sm font-bold text-neutral-900">
-                          {formatRupiah(unit.price)}
-                        </p>
-                        <p className="text-[10px] text-neutral-400 font-medium">
-                          {unit.land_area}m² Tanah • {unit.bedroom_count}KT •{" "}
-                          {unit.bathroom_count}KM
-                        </p>
-                      </div>
-                    </td>
-
-                    <td className="px-8 py-6">
-                      <StatusBadge status={unit.status} />
-                    </td>
-
-                    <td className="px-8 py-6">
-                      <div className="flex justify-end items-center gap-2">
-                        <ActionButton
-                          href={`/unit/${unit.slug}`}
-                          icon={<ExternalLink size={14} />}
-                          label="Preview"
-                          target="_blank"
-                        />
-                        <ActionButton
-                          href={`/admin/units/edit/${unit.id}`}
-                          icon={<Edit size={14} />}
-                          label="Edit"
-                          variant="blue"
-                        />
-                        <DeleteButton id={unit.id} />
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={4}
-                    className="px-8 py-32 text-center text-neutral-400 opacity-20"
-                  >
-                    <Search size={48} className="mx-auto mb-4" />
-                    <p className="text-xs font-bold uppercase tracking-[0.3em]">
-                      Belum ada unit tersedia
-                    </p>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      {(unitsError || categoriesError) && (
+        <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+          Data properti belum dapat dimuat lengkap. Coba muat ulang halaman.
         </div>
+      )}
+
+      {/* KPI Summary */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 lg:gap-6">
+        <KpiCard
+          label="Total Unit"
+          value={total}
+          description="Keseluruhan listing properti"
+          iconBg="bg-gradient-to-br from-blue-100 to-indigo-50"
+          iconColor="text-blue-600"
+          icon={<Home size={20} strokeWidth={1.5} />}
+        />
+        <KpiCard
+          label="Tersedia"
+          value={available}
+          description="Unit siap dipasarkan"
+          iconBg="bg-gradient-to-br from-emerald-100 to-teal-50"
+          iconColor="text-emerald-600"
+          icon={<CheckCircle2 size={20} strokeWidth={1.5} />}
+        />
+        <KpiCard
+          label="Booked"
+          value={booked}
+          description="Sedang dalam proses KPR/cicilan"
+          iconBg="bg-gradient-to-br from-amber-100 to-orange-50"
+          iconColor="text-amber-600"
+          icon={<Clock size={20} strokeWidth={1.5} />}
+        />
+        <KpiCard
+          label="Terjual"
+          value={sold}
+          description="Properti yang sudah serah terima"
+          iconBg="bg-gradient-to-br from-violet-100 to-fuchsia-50"
+          iconColor="text-violet-600"
+          icon={<PackageX size={20} strokeWidth={1.5} />}
+        />
       </div>
+
+      {/* Client Workspace: Filters + Table */}
+      {!unitsError && <UnitsWorkspace units={unitsWithUpdatedLabels} categories={allCategories} />}
     </div>
   );
 }
 
-// Internal UI Components
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    Tersedia: "bg-emerald-50 text-emerald-600 border-emerald-100",
-    Sold: "bg-neutral-900 text-white border-neutral-900",
-    Booked: "bg-amber-50 text-amber-600 border-amber-100",
-    "Coming Soon": "bg-blue-50 text-blue-600 border-blue-100",
-  };
-  return (
-    <span
-      className={`px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest ${styles[status] || styles["Tersedia"]}`}
-    >
-      {status}
-    </span>
-  );
-}
-
-function ActionButton({
-  href,
-  icon,
+function KpiCard({
   label,
-  variant = "neutral",
-  ...props
-}: any) {
-  const variants: Record<string, string> = {
-    neutral: "hover:bg-black hover:text-white",
-    blue: "hover:bg-blue-600 hover:text-white",
-  };
+  value,
+  description,
+  iconBg,
+  iconColor,
+  icon,
+}: {
+  label: string;
+  value: number;
+  description: string;
+  iconBg: string;
+  iconColor: string;
+  icon: React.ReactNode;
+}) {
   return (
-    <Link
-      href={href}
-      {...props}
-      className={`flex items-center gap-2 px-3 py-2 rounded-xl text-neutral-400 transition-all duration-300 border border-transparent hover:border-neutral-100 hover:shadow-sm ${variants[variant]}`}
-    >
-      {icon}
-      <span className="text-[9px] font-bold uppercase tracking-widest hidden lg:block">
-        {label}
-      </span>
-    </Link>
+    <div className="group relative overflow-hidden rounded-[1.25rem] border border-slate-200/70 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_12px_40px_rgb(0,0,0,0.06)]">
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-50/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div className="relative flex items-start justify-between">
+        <div className="flex flex-col z-10">
+          <p className="text-[11px] font-bold tracking-[0.08em] uppercase text-slate-500">
+            {label}
+          </p>
+          <p className="mt-3.5 text-4xl font-extrabold tracking-tight text-slate-900 leading-none">
+            {value.toLocaleString("id-ID")}
+          </p>
+          <p className="mt-3 text-[11px] font-medium text-slate-400">
+            {description}
+          </p>
+        </div>
+        <div
+          className={`relative z-10 flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-[14px] ${iconBg} ${iconColor} shadow-[inset_0_1px_3px_rgb(255,255,255,0.5)] transition-transform duration-500 ease-out group-hover:scale-110 group-hover:rotate-3`}
+        >
+          {icon}
+        </div>
+      </div>
+    </div>
   );
 }

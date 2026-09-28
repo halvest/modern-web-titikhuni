@@ -21,19 +21,19 @@ const BenefitCard = ({
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true }}
     transition={{ duration: 0.7, delay }}
-    className="bg-white p-8 rounded-2xl shadow-xl border border-slate-100"
+    className="bg-white p-8 rounded-2xl shadow-xl border border-surface-muted"
   >
     <div className="bg-yellow-100 text-yellow-500 w-14 h-14 rounded-full flex items-center justify-center mb-5">
       {icon}
     </div>
-    <h3 className="text-2xl font-bold text-slate-800 mb-3">{title}</h3>
-    <p className="text-slate-600 leading-relaxed">{children}</p>
+    <h3 className="text-2xl font-bold text-foreground mb-3">{title}</h3>
+    <p className="text-foreground-muted leading-relaxed">{children}</p>
   </motion.div>
 );
 
 export const PromoLaunchingSection = () => {
   return (
-    <section id="benefits" className="py-24 bg-slate-50">
+    <section id="benefits" className="py-24 bg-surface">
       <div className="container mx-auto px-6">
         {/* Judul Seksi */}
         <motion.div
@@ -43,10 +43,10 @@ export const PromoLaunchingSection = () => {
           transition={{ duration: 0.8 }}
           className="text-center max-w-3xl mx-auto mb-16"
         >
-          <h2 className="text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">
+          <h2 className="text-4xl sm:text-5xl font-extrabold text-foreground leading-tight">
             Investasi Cerdas dengan Keuntungan Maksimal
           </h2>
-          <p className="mt-4 text-lg text-slate-600">
+          <p className="mt-4 text-lg text-foreground-muted">
             Villa Lodji Svarga 2 dirancang untuk memberikan Anda keuntungan pasif yang stabil dengan risiko minimal.
           </p>
         </motion.div>

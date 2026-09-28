@@ -1,155 +1,235 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { getAdminContext, verifyAdmin } from "@/utils/supabase/server";
+import { sanitizeRichText } from "@/lib/security/sanitize-rich-text";
 
-/**
- * UTILITY: Ekstrak Path file dari URL Supabase Storage
- */
-const extractPathFromUrl = (url: string, bucket: string) => {
-  if (!url) return null;
+const ALLOWED_STATUSES = new Set(["draft", "published", "archived"]);
+
+type ActionResult = {
+  success?: boolean;
+  id?: string;
+  warning?: string;
+  error?: string;
+};
+
+type PostPayload = {
+  title: string | null;
+  slug: string | null;
+  content: string;
+  excerpt: string;
+  featured_image: string | null;
+  category_id: string | null;
+  status: string;
+  seo_title: string | null;
+  meta_description: string | null;
+  canonical_url: string | null;
+  is_indexed: boolean;
+  og_image: string | null;
+  updated_at: string;
+  author_id?: string;
+};
+
+function textValue(formData: FormData, key: string) {
+  return formData.get(key)?.toString().trim() || null;
+}
+
+function isHttpUrl(value: string | null) {
+  if (!value) return true;
   try {
-    const segment = `/public/${bucket}/`;
-    if (!url.includes(segment)) return null;
-    return url.split(segment)[1];
-  } catch (e) {
-    return null;
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
   }
-};
+}
 
-/**
- * UTILITY: Ekstrak semua URL gambar dari string HTML (Konten TipTap)
- */
-const extractImagesFromHtml = (html: string) => {
-  const imgRegex = /<img[^>]+src="([^">]+)"/g;
-  const urls = [];
-  let match;
-  while ((match = imgRegex.exec(html)) !== null) {
-    urls.push(match[1]);
-  }
-  return urls;
-};
-
-/**
- * ==========================================
- * ACTIONS: BLOG POSTS (CRUD)
- * ==========================================
- */
-
-export async function savePost(formData: FormData) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const postData = {
-    title: formData.get("title")?.toString() || null,
-    slug: formData.get("slug")?.toString() || null,
-    content: formData.get("content")?.toString() || "",
-    excerpt: formData.get("excerpt")?.toString() || "",
-    featured_image: formData.get("featured_image")?.toString() || null,
-    category_id: formData.get("category_id")?.toString() || null,
-    status: formData.get("status")?.toString() || "draft",
-    author_id: user?.id || null,
+function buildPostPayload(formData: FormData, authorId?: string): PostPayload {
+  const requestedStatus = textValue(formData, "status") || "draft";
+  return {
+    title: textValue(formData, "title"),
+    slug: textValue(formData, "slug"),
+    content: sanitizeRichText(formData.get("content")?.toString() || ""),
+    excerpt: textValue(formData, "excerpt") || "",
+    featured_image: textValue(formData, "featured_image"),
+    category_id: textValue(formData, "category_id"),
+    status: ALLOWED_STATUSES.has(requestedStatus) ? requestedStatus : "draft",
+    seo_title: textValue(formData, "seo_title"),
+    meta_description: textValue(formData, "meta_description"),
+    canonical_url: textValue(formData, "canonical_url"),
+    is_indexed: formData.get("is_indexed") === "true",
+    og_image: textValue(formData, "og_image"),
     updated_at: new Date().toISOString(),
+    ...(authorId ? { author_id: authorId } : {}),
   };
+}
 
-  if (!postData.title || !postData.slug) {
-    return { error: "Judul dan Slug wajib diisi." };
+function validatePost(post: PostPayload) {
+  if (!post.title || !post.slug || !post.category_id) {
+    return "Judul, slug, dan kategori wajib diisi.";
+  }
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(post.slug)) {
+    return "Slug hanya boleh berisi huruf kecil, angka, dan tanda hubung.";
+  }
+  if (!isHttpUrl(post.canonical_url) || !isHttpUrl(post.og_image)) {
+    return "Canonical URL dan OG image harus berupa URL lengkap yang valid.";
+  }
+  if (post.status === "published" && post.content.replace(/<[^>]*>/g, "").trim().length < 10) {
+    return "Isi artikel terlalu pendek untuk dipublikasikan.";
+  }
+  return null;
+}
+
+function relationValues(formData: FormData, key: string) {
+  return Array.from(new Set(formData.getAll(key).map(String).map((value) => value.trim()).filter(Boolean)));
+}
+
+async function syncRelations(supabase: SupabaseClient, postId: string, formData: FormData) {
+  const tags = relationValues(formData, "tags");
+  const unitIds = relationValues(formData, "related_unit_ids");
+  const postIds = relationValues(formData, "related_post_ids").filter((id) => id !== postId);
+
+  const cleanupQueries = await Promise.all([
+    supabase.from("post_tags").delete().eq("post_id", postId),
+    supabase.from("post_related_units").delete().eq("post_id", postId),
+    supabase.from("post_related_posts").delete().eq("post_id", postId),
+  ]);
+  const cleanupError = cleanupQueries.find((result) => result.error)?.error;
+  if (cleanupError) throw new Error(`Relasi lama gagal diperbarui: ${cleanupError.message}`);
+
+  const tagIds: string[] = [];
+  for (const name of tags) {
+    const existing = await supabase.from("tags").select("id").eq("name", name).maybeSingle();
+    if (existing.error) throw new Error(`Tag gagal diperiksa: ${existing.error.message}`);
+    if (existing.data?.id) {
+      tagIds.push(existing.data.id);
+      continue;
+    }
+    const created = await supabase.from("tags").insert({ name }).select("id").single();
+    if (created.error) throw new Error(`Tag gagal dibuat: ${created.error.message}`);
+    tagIds.push(created.data.id);
   }
 
-  const { error } = await supabase.from("posts").insert([postData]);
-
-  if (error) {
-    if (error.code === "23505") return { error: "Slug sudah digunakan." };
-    return { error: error.message };
+  const insertQueries = [];
+  if (tagIds.length) {
+    insertQueries.push(supabase.from("post_tags").insert(tagIds.map((tagId) => ({ post_id: postId, tag_id: tagId }))));
+  }
+  if (unitIds.length) {
+    insertQueries.push(supabase.from("post_related_units").insert(unitIds.map((unitId) => ({ post_id: postId, unit_id: unitId }))));
+  }
+  if (postIds.length) {
+    insertQueries.push(supabase.from("post_related_posts").insert(postIds.map((relatedPostId) => ({ post_id: postId, related_post_id: relatedPostId }))));
   }
 
+  const insertResults = await Promise.all(insertQueries);
+  const insertError = insertResults.find((result) => result.error)?.error;
+  if (insertError) throw new Error(`Relasi artikel gagal disimpan: ${insertError.message}`);
+}
+
+function revalidatePostPaths(slug?: string | null) {
   revalidatePath("/");
   revalidatePath("/blog");
   revalidatePath("/admin/posts");
-  redirect("/admin/posts");
+  if (slug) revalidatePath(`/blog/${slug}`);
 }
 
-export async function updatePost(id: string, formData: FormData) {
-  const supabase = await createClient();
-
-  const postData = {
-    title: formData.get("title")?.toString() || null,
-    slug: formData.get("slug")?.toString() || null,
-    content: formData.get("content")?.toString() || "",
-    excerpt: formData.get("excerpt")?.toString() || "",
-    featured_image: formData.get("featured_image")?.toString() || null,
-    category_id: formData.get("category_id")?.toString() || null,
-    status: formData.get("status")?.toString() || "draft",
-    updated_at: new Date().toISOString(),
-  };
-
-  const { error } = await supabase.from("posts").update(postData).eq("id", id);
-  if (error) return { error: error.message };
-
-  revalidatePath("/");
-  revalidatePath("/blog");
-  revalidatePath(`/blog/${postData.slug}`);
-  revalidatePath("/admin/posts");
-
-  return { success: true };
+function databaseError(error: { code?: string; message: string }) {
+  return error.code === "23505" ? "Slug sudah digunakan." : error.message;
 }
 
-/**
- * DELETE POST (PERMANENT HARD DELETE)
- * Menghapus Featured Image, Semua Gambar di dalam Konten, dan Baris Database.
- */
-export async function deletePost(id: string) {
-  const supabase = await createClient();
-
+export async function savePost(formData: FormData): Promise<ActionResult> {
   try {
-    // 1. Ambil data lengkap sebelum dihapus
-    const { data: post, error: fetchError } = await supabase
-      .from("posts")
-      .select("featured_image, content")
-      .eq("id", id)
-      .single();
+    const { supabase, user } = await getAdminContext();
+    const postData = buildPostPayload(formData, user.id);
+    const validationError = validatePost(postData);
+    if (validationError) return { error: validationError };
 
-    if (fetchError || !post) throw new Error("Artikel tidak ditemukan.");
+    const created = await supabase.from("posts").insert(postData).select("id, slug").single();
+    if (created.error) return { error: databaseError(created.error) };
 
-    // 2. Kumpulkan semua URL gambar (Featured Image + Gambar di dalam Konten)
-    const contentImages = extractImagesFromHtml(post.content || "");
-    const allImages = [
-      ...(post.featured_image ? [post.featured_image] : []),
-      ...contentImages,
-    ];
-
-    // 3. Ekstrak path dan hapus dari Storage
-    const pathsToDelete = allImages
-      .map((url) => extractPathFromUrl(url, "blog"))
-      .filter((path): path is string => path !== null);
-
-    if (pathsToDelete.length > 0) {
-      const { error: storageError } = await supabase.storage
-        .from("blog")
-        .remove(pathsToDelete);
-
-      if (storageError)
-        console.error("Gagal hapus file storage:", storageError.message);
+    try {
+      await syncRelations(supabase, created.data.id, formData);
+    } catch (error) {
+      await supabase.from("posts").delete().eq("id", created.data.id);
+      throw error;
     }
 
-    // 4. Hapus baris data secara PERMANEN dari tabel (Hard Delete)
-    const { error: dbError } = await supabase
+    revalidatePostPaths(created.data.slug);
+    return { success: true, id: created.data.id };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Artikel gagal disimpan." };
+  }
+}
+
+export async function updatePost(id: string, formData: FormData): Promise<ActionResult> {
+  try {
+    const supabase = await verifyAdmin();
+    const postData = buildPostPayload(formData);
+    const validationError = validatePost(postData);
+    if (validationError) return { error: validationError };
+
+    const existing = await supabase.from("posts").select("slug").eq("id", id).maybeSingle();
+    if (existing.error) return { error: existing.error.message };
+    if (!existing.data) return { error: "Artikel tidak ditemukan." };
+
+    const updated = await supabase.from("posts").update(postData).eq("id", id).select("id").maybeSingle();
+    if (updated.error) return { error: databaseError(updated.error) };
+    if (!updated.data) return { error: "Artikel tidak ditemukan atau tidak dapat diubah." };
+
+    let warning: string | undefined;
+    if (existing.data.slug !== postData.slug) {
+      const redirectResult = await supabase.from("redirects").upsert({
+        old_path: `/blog/${existing.data.slug}`,
+        new_path: `/blog/${postData.slug}`,
+        is_permanent: true,
+      }, { onConflict: "old_path" });
+      if (redirectResult.error) warning = "Artikel tersimpan, tetapi redirect slug lama gagal dibuat.";
+    }
+
+    try {
+      await syncRelations(supabase, id, formData);
+    } catch (error) {
+      warning = error instanceof Error ? error.message : "Artikel tersimpan, tetapi relasi gagal diperbarui.";
+    }
+
+    revalidatePostPaths(existing.data.slug);
+    revalidatePostPaths(postData.slug);
+    return { success: true, id, warning };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Perubahan artikel gagal disimpan." };
+  }
+}
+
+export async function deletePost(id: string): Promise<ActionResult> {
+  try {
+    const supabase = await verifyAdmin();
+    const fetched = await supabase
       .from("posts")
-      .delete()
-      .eq("id", id);
+      .select("id, slug")
+      .eq("id", id)
+      .is("deleted_at", null)
+      .maybeSingle();
+    if (fetched.error) return { error: fetched.error.message };
+    if (!fetched.data) return { error: "Artikel tidak ditemukan." };
 
-    if (dbError) throw dbError;
+    const deleted = await supabase
+      .from("posts")
+      .update({
+        deleted_at: new Date().toISOString(),
+        status: "archived",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .is("deleted_at", null)
+      .select("id")
+      .maybeSingle();
+    if (deleted.error) return { error: deleted.error.message };
+    if (!deleted.data) return { error: "Artikel tidak ditemukan atau tidak dapat dihapus." };
 
-    // 5. Update Cache
-    revalidatePath("/");
-    revalidatePath("/blog");
-    revalidatePath("/admin/posts");
-
+    revalidatePostPaths(fetched.data.slug);
     return { success: true };
-  } catch (err: any) {
-    return { error: "Gagal menghapus: " + err.message };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Artikel gagal dihapus." };
   }
 }

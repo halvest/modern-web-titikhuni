@@ -28,7 +28,7 @@ export function DeleteButton({ id }: { id: string }) {
     <button
       onClick={handleAction}
       disabled={isPending}
-      className="flex items-center gap-2 px-3 py-2 rounded-xl text-neutral-400 hover:bg-red-50 hover:text-red-600 transition-all duration-300 border border-transparent disabled:opacity-50"
+      className="flex items-center gap-2 px-3 py-2 rounded-xl text-foreground-soft hover:bg-red-50 hover:text-red-600 transition-all duration-300 border border-transparent disabled:opacity-50"
     >
       {isPending ? (
         <Loader2 size={14} className="animate-spin" />
