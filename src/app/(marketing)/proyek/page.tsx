@@ -7,9 +7,9 @@ import { siteConfig } from "@/config/site";
 import { getPublishedProjectsPage } from "@/lib/projects";
 
 const pageUrl = siteConfig.url + "/proyek";
-const pageTitle = "Portofolio Proyek Hunian di Yogyakarta";
+const pageTitle = "Portofolio Arsitek & Kontraktor di Yogyakarta";
 const pageDescription =
-  "Jelajahi foto, lokasi, dan detail proyek rumah di Yogyakarta dalam portofolio Titik Huni. Temukan dokumentasi hunian di Sleman dan Bantul.";
+  "Jelajahi portofolio proyek arsitek dan kontraktor Titik Huni di Yogyakarta. Dari desain arsitektur hingga hasil pembangunan rumah yang telah selesai.";
 
 type ProjectsPageProps = {
   searchParams: Promise<{ page?: string | string[] }>;
@@ -55,7 +55,7 @@ export async function generateMetadata({ searchParams }: ProjectsPageProps): Pro
       siteName: siteConfig.name,
       locale: siteConfig.locale,
       type: "website",
-      images: [{ url: `${siteConfig.url}/og.jpg`, width: 1200, height: 630, alt: "Portofolio proyek rumah Titik Huni di Yogyakarta" }],
+      images: [{ url: `${siteConfig.url}/og.jpg`, width: 1200, height: 630, alt: "Portofolio Arsitek dan Kontraktor Titik Huni di Yogyakarta" }],
     },
     twitter: { card: "summary_large_image", title, description: pageDescription, images: [`${siteConfig.url}/og.jpg`] },
   };
@@ -113,14 +113,14 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
 
             <header className="flex flex-col justify-between gap-5 border-b border-border/80 pb-7 lg:flex-row lg:items-end">
               <div className="max-w-3xl">
-                <p className="site-eyebrow text-primary before:bg-primary">Portofolio Titik Huni · Yogyakarta</p>
+                <p className="site-eyebrow text-primary before:bg-primary">Portofolio Arsitek &amp; Kontraktor · Yogyakarta</p>
                 <h1 id="projects-page-title" className="mt-2 text-balance text-[clamp(2.15rem,4vw,3.5rem)] font-medium leading-[1.06] tracking-[-0.045em]">
-                  Proyek hunian yang kami <span className="text-primary">wujudkan.</span>
+                  Karya arsitektur dan <span className="text-primary">konstruksi kami.</span>
                 </h1>
               </div>
               <div className="max-w-md lg:text-right">
                 <p className="text-pretty text-sm leading-6 text-foreground-muted sm:text-base sm:leading-7">
-                  Jelajahi dokumentasi desain dan pembangunan hunian Titik Huni di Yogyakarta.
+                  Jelajahi hasil karya rancang bangun Titik Huni di Yogyakarta, dari tahap desain hingga serah terima bangunan.
                 </p>
                 <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary hover:underline">
                   Diskusikan proyek Anda <ArrowUpRight size={14} aria-hidden="true" />

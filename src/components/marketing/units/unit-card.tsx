@@ -70,13 +70,15 @@ export function UnitCard({
             src={unit.image_url}
             alt={`${unit.title}, rumah di ${displayLocation}`}
             fill
-            preload={index < (variant === "featured" ? 1 : 3)}
+            priority={index < (variant === "featured" ? 1 : 2)}
+            loading={index < (variant === "featured" ? 1 : 2) ? undefined : "lazy"}
+            quality={75}
             sizes={variant === "featured"
-              ? "(max-width: 639px) 86vw, (max-width: 1023px) 44vw, 33vw"
-              : "(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"}
+              ? "(max-width: 639px) 86vw, (max-width: 1023px) 44vw, 380px"
+              : "(max-width: 639px) 92vw, (max-width: 1023px) 48vw, 380px"}
             className={isComingSoon
-              ? "scale-105 object-cover blur-[3px] grayscale"
-              : "object-cover transition-transform duration-700 ease-out group-hover:scale-[1.035]"}
+              ? "scale-105 object-cover blur-[2px] grayscale"
+              : "object-cover transition-transform duration-700 ease-out motion-safe:group-hover:scale-[1.035]"}
           />
         ) : (
           <div className="flex h-full items-center justify-center px-6 text-center text-sm text-foreground-soft">
@@ -108,7 +110,7 @@ export function UnitCard({
               aria-hidden="true"
             />
           )}
-          {isSold ? "Terjual" : isBooked ? "Dipesan" : unit.status}
+          {isSold ? "Sold Out" : isBooked ? "Booked" : isComingSoon ? "Coming Soon" : "Active"}
         </span>
       </figure>
 

@@ -203,31 +203,51 @@ function UnitRowActions({ unit, onDeleted }: { unit: Unit; onDeleted: (id: strin
 
 // ─── Main Workspace ───────────────────────────────────────────────────────────
 
-export default function UnitsWorkspace({ units: initialUnits, categories }: { units: Unit[]; categories: Category[] }) {
+export default function UnitsWorkspace({ units, categories, totalCount }: { units: Unit[]; categories: Category[]; totalCount: number }) {
   const router = useRouter();
-  const [units, setUnits] = useState(initialUnits);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
 
   const hasActiveFilters = filterStatus !== "all" || filterCategory !== "all" || search.trim() !== "";
 
-  const handleReset = () => { setSearch(""); setFilterStatus("all"); setFilterCategory("all"); };
+  const updateFilters = (newSearch: string, newStatus: string, newCat: string) => {
+    const params = new URLSearchParams();
+    if (newSearch.trim()) params.set("search", newSearch.trim());
+    if (newStatus !== "all") params.set("status", newStatus);
+    if (newCat !== "all") params.set("category", newCat);
+    params.set("page", "1");
+    router.replace(`/admin/units?${params.toString()}`);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+    updateFilters(e.target.value, filterStatus, filterCategory);
+  };
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilterStatus(e.target.value);
+    updateFilters(search, e.target.value, filterCategory);
+  };
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilterCategory(e.target.value);
+    updateFilters(search, filterStatus, e.target.value);
+  };
+
+  const handleReset = () => { 
+    setSearch(""); 
+    setFilterStatus("all"); 
+    setFilterCategory("all"); 
+    router.replace("/admin/units");
+  };
+
   const handleDeleted = (id: string) => {
-    setUnits((prev) => prev.filter((u) => u.id !== id));
     router.refresh();
   };
 
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase().trim();
-    return units.filter((u) => {
-      const matchStatus = filterStatus === "all" || u.status === filterStatus;
-      const category = unitCategory(u);
-      const matchCategory = filterCategory === "all" || category?.id === filterCategory;
-      const matchSearch = !q || u.title.toLowerCase().includes(q) || (u.slug || "").toLowerCase().includes(q) || (u.location || "").toLowerCase().includes(q) || (category?.name || "").toLowerCase().includes(q);
-      return matchStatus && matchCategory && matchSearch;
-    });
-  }, [units, filterStatus, filterCategory, search]);
+  // filtered is now just units from props
+  const filtered = units;
 
   const statusOptions = [
     { label: "Semua Status", value: "all" },
@@ -245,21 +265,21 @@ export default function UnitsWorkspace({ units: initialUnits, categories }: { un
               type="search"
               placeholder="Cari unit, lokasi, kategori..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={handleSearchChange}
               className="w-full pl-9 pr-4 py-2.5 text-sm border border-slate-200 rounded-lg outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all bg-white placeholder:text-slate-400"
               aria-label="Cari unit properti"
             />
           </div>
           <div className="flex flex-wrap gap-2 items-center">
             <div className="relative">
-              <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="appearance-none text-sm border border-slate-200 rounded-lg pl-3 pr-8 py-2.5 outline-none focus:border-emerald-500 bg-white text-slate-700 cursor-pointer" aria-label="Filter status">
+              <select value={filterStatus} onChange={handleStatusChange} className="appearance-none text-sm border border-slate-200 rounded-lg pl-3 pr-8 py-2.5 outline-none focus:border-emerald-500 bg-white text-slate-700 cursor-pointer" aria-label="Filter status">
                 {statusOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
               </select>
               <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" aria-hidden="true" />
             </div>
             {categories.length > 0 && (
               <div className="relative">
-                <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="appearance-none text-sm border border-slate-200 rounded-lg pl-3 pr-8 py-2.5 outline-none focus:border-emerald-500 bg-white text-slate-700 cursor-pointer" aria-label="Filter kategori">
+                <select value={filterCategory} onChange={handleCategoryChange} className="appearance-none text-sm border border-slate-200 rounded-lg pl-3 pr-8 py-2.5 outline-none focus:border-emerald-500 bg-white text-slate-700 cursor-pointer" aria-label="Filter kategori">
                   <option value="all">Semua Kategori</option>
                   {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
@@ -279,20 +299,21 @@ export default function UnitsWorkspace({ units: initialUnits, categories }: { un
             {filterStatus !== "all" && (
               <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded-md text-xs font-medium">
                 {UNIT_STATUS_CONFIG[filterStatus]?.label || filterStatus}
-                <button onClick={() => setFilterStatus("all")} aria-label="Hapus filter status"><X size={11} /></button>
+                <button onClick={() => { setFilterStatus("all"); updateFilters(search, "all", filterCategory); }} aria-label="Hapus filter status"><X size={11} /></button>
               </span>
             )}
             {filterCategory !== "all" && (
               <span className="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium">
                 {categories.find((c) => c.id === filterCategory)?.name}
-                <button onClick={() => setFilterCategory("all")} aria-label="Hapus filter kategori"><X size={11} /></button>
+                <button onClick={() => { setFilterCategory("all"); updateFilters(search, filterStatus, "all"); }} aria-label="Hapus filter kategori"><X size={11} /></button>
               </span>
             )}
             {search && (
               <span className="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium">
                 "{search}"
-                <button onClick={() => setSearch("")} aria-label="Hapus pencarian"><X size={11} /></button>
+                <button onClick={() => { setSearch(""); updateFilters("", filterStatus, filterCategory); }} aria-label="Hapus pencarian"><X size={11} /></button>
               </span>
+
             )}
           </div>
         )}

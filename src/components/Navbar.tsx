@@ -10,8 +10,7 @@ import { siteConfig } from "@/config/site";
 const links = [
   { name: "Beranda", href: "/" },
   { name: "Tentang kami", href: "/tentang-kami" },
-  { name: "Unit kami", href: "/unit" },
-  { name: "Proyek", href: "/proyek" },
+  { name: "Katalog", href: "/unit" },
   { name: "Arsitek & kontraktor", href: "/arsitek-kontraktor" },
   { name: "Blog", href: "/blog" },
 ];
@@ -100,6 +99,7 @@ export function Navbar() {
             alt="Titik Huni"
             width={678}
             height={166}
+            sizes="150px"
             preload
             className={`h-auto w-[8.5rem] transition-[filter] duration-300 sm:w-[9.25rem] ${
               heroMode ? "brightness-0 invert" : ""

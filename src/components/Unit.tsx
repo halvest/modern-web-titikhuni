@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cache } from "react";
-import { ArrowLeftRight, ArrowRight } from "lucide-react";
-import { UnitCard } from "@/components/marketing/units/unit-card";
+import { ArrowRight } from "lucide-react";
+import { CatalogFilter } from "@/components/marketing/units/catalog-filter";
 import { createClient } from "@/utils/supabase/server";
 import { ScrollReveal } from "@/components/ScrollReveal";
 
@@ -69,28 +69,7 @@ export async function Unit() {
             </div>
           ) : (
             <>
-              <div
-                className={`mb-4 items-center justify-between gap-4 lg:hidden ${units.length > 1 ? "flex" : "hidden"}`}
-              >
-                <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-foreground-soft">
-                  Geser untuk lihat lainnya
-                </p>
-                <ArrowLeftRight
-                  size={18}
-                  className="shrink-0 text-primary"
-                  aria-hidden="true"
-                />
-              </div>
-
-              <div
-                className="-mx-5 grid snap-x snap-mandatory grid-flow-col auto-cols-[86vw] items-start gap-4 overflow-x-auto overscroll-x-contain scroll-px-5 px-5 pb-3 scrollbar-hide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 sm:-mx-7 sm:auto-cols-[44vw] sm:scroll-px-7 sm:px-7 md:auto-cols-[42vw] lg:mx-0 lg:grid-flow-row lg:grid-cols-3 lg:auto-cols-auto lg:items-stretch lg:gap-6 lg:overflow-visible lg:px-0 lg:pb-0"
-                aria-label="Rumah pilihan Titik Huni di Yogyakarta"
-                tabIndex={0}
-              >
-                {units.map((unit, index) => (
-                  <UnitCard key={unit.id} unit={unit} index={index} variant="featured" />
-                ))}
-              </div>
+              <CatalogFilter units={units as any} hideStats />
             </>
           )}
 

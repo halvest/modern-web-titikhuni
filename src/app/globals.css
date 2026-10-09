@@ -253,6 +253,12 @@
     will-change: opacity, transform;
   }
 
+  /* Fallback for users with JavaScript disabled */
+  noscript .reveal-on-scroll {
+    opacity: 1;
+    transform: none;
+  }
+
   .reveal-on-scroll.reveal-visible {
     opacity: 1;
     transform: translateY(0);

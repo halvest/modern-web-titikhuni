@@ -5,9 +5,9 @@ import type { CatalogUnit } from "@/components/marketing/units/unit-card";
 import { CatalogFilter } from "@/components/marketing/units/catalog-filter";
 import { CatalogSections } from "@/components/marketing/units/catalog-sections";
 import { siteConfig } from "@/config/site";
-import { createClient } from "@/utils/supabase/server";
+import { supabase } from "@/lib/supabaseClient";
 
-export const revalidate = 1800; // ISR 30 minutes for fast TTFB
+export const revalidate = 1800; // ISR 30 minutes for ultra-fast TTFB
 
 const PAGE_PATH = "/unit";
 const PAGE_URL = `${siteConfig.url}${PAGE_PATH}`;
@@ -78,8 +78,6 @@ function sortUnits(units: CatalogUnit[]): CatalogUnit[] {
 }
 
 export default async function UnitCatalogPage() {
-  const supabase = await createClient();
-
   const { data: rawUnits, error } = await supabase
     .from("units")
     .select(

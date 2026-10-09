@@ -1,10 +1,12 @@
-import { createClient } from "@/utils/supabase/server";
+import { supabase } from "@/lib/supabaseClient";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Calendar, ArrowRight, Hash } from "lucide-react";
 import { Metadata } from "next";
 import { generateSeoMetadata } from "@/lib/seo/metadata";
+
+export const revalidate = 3600;
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -13,7 +15,7 @@ type Props = {
 // 1. Generate Metadata Dinamis untuk SEO Kategori
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
+
   const { data: category } = await supabase
     .from("categories")
     .select("name")
@@ -36,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BlogCategoryPage({ params }: Props) {
   const { slug } = await params;
-  const supabase = await createClient();
+
 
   // 2. Ambil data kategori & artikel terkait dalam satu query
   const { data: category, error } = await supabase
@@ -113,8 +115,9 @@ export default async function BlogCategoryPage({ params }: Props) {
                     src={post.featured_image || "/assets/images/konsep_titikhuni.webp"}
                     alt={post.title}
                     fill
-                    preload={index === 0}
-                    sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 33vw"
+                    priority={index === 0}
+                    quality={75}
+                    sizes="(max-width: 639px) 92vw, (max-width: 1023px) 46vw, 380px"
                     className="object-cover transition-transform duration-700 group-hover:scale-[1.035]"
                   />
                 </Link>

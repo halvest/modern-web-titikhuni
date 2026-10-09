@@ -142,10 +142,7 @@ export function BlogEditor({
   };
 
   return (
-    <div className="flex flex-col w-full" style={{ flex: "1 1 0%", minHeight: 0 }}>
-      {/* Scrollable content area */}
-      <div className="overflow-y-auto p-4 sm:p-6 lg:p-8" style={{ flex: "1 1 0%", minHeight: 0 }}>
-        
+    <>
         {/* Page header */}
         <div className="mb-8">
           <button
@@ -240,7 +237,6 @@ export function BlogEditor({
             </div>
           </main>
         </div>
-      </div>
-    </div>
+    </>
   );
 }

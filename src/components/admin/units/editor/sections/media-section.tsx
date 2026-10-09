@@ -51,12 +51,24 @@ export function MediaSection({
 
     setUploadingGallery(true);
     const toastId = toast.loading("Mengunggah foto galeri...");
+    const uploadedUrls: string[] = [];
     try {
-      const urls = await Promise.all(files.map(uploadImage));
-      onChange({ gallery: [...data.gallery, ...urls] });
+      for (const [index, file] of files.entries()) {
+        const url = await uploadImage(file);
+        uploadedUrls.push(url);
+        toast.loading(`Mengunggah foto galeri (${index + 1}/${files.length})...`, { id: toastId });
+      }
+
+      onChange({ gallery: [...data.gallery, ...uploadedUrls] });
       toast.success("Galeri berhasil diperbarui", { id: toastId });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Foto galeri gagal diunggah", { id: toastId });
+      const errorMessage = error instanceof Error ? error.message : "Foto galeri gagal diunggah";
+      if (uploadedUrls.length) {
+        onChange({ gallery: [...data.gallery, ...uploadedUrls] });
+        toast.error(`${uploadedUrls.length} foto berhasil diunggah sebelum proses gagal. ${errorMessage}`, { id: toastId });
+      } else {
+        toast.error(errorMessage, { id: toastId });
+      }
     } finally {
       setUploadingGallery(false);
       event.target.value = "";
@@ -76,10 +88,10 @@ export function MediaSection({
         <div className="flex items-start justify-between gap-4">
           <div><h3 className="text-sm font-semibold text-slate-900">Foto Utama</h3><p className="mt-1 text-xs text-slate-500">Digunakan pada katalog dan halaman detail.</p></div>
           {data.image_url && (
-            <label className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-within:ring-2 focus-within:ring-emerald-500">
+            <label className="relative inline-flex min-h-10 cursor-pointer items-center gap-2 overflow-hidden rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-within:ring-2 focus-within:ring-emerald-500">
               {uploadingMain ? <Loader2 size={15} className="animate-spin" aria-hidden="true" /> : <Upload size={15} aria-hidden="true" />}
               Ganti Foto
-              <input type="file" className="sr-only" accept="image/jpeg,image/png,image/webp,image/avif" onChange={handleMainImageChange} disabled={uploadingMain} aria-label="Ganti foto utama" />
+              <input id="main-image-upload" name="mainImage" type="file" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" accept="image/jpeg,image/png,image/webp,image/avif" onChange={handleMainImageChange} disabled={uploadingMain} aria-label="Ganti foto utama" />
             </label>
           )}
         </div>
@@ -88,11 +100,11 @@ export function MediaSection({
           {data.image_url ? (
             <div className="relative aspect-[16/9] w-full"><Image src={data.image_url} alt={`Foto utama ${data.title || "properti"}`} fill sizes="(max-width: 1024px) 100vw, 800px" className="object-cover" /></div>
           ) : (
-            <label className="flex aspect-[16/9] cursor-pointer flex-col items-center justify-center p-6 text-center transition-colors hover:bg-slate-100 focus-within:ring-2 focus-within:ring-emerald-500">
+            <label className="relative flex aspect-[16/9] cursor-pointer flex-col items-center justify-center overflow-hidden p-6 text-center transition-colors hover:bg-slate-100 focus-within:ring-2 focus-within:ring-emerald-500">
               {uploadingMain ? <Loader2 size={28} className="animate-spin text-emerald-600" aria-hidden="true" /> : <ImageIcon size={30} className="text-slate-300" aria-hidden="true" />}
               <span className="mt-3 text-sm font-medium text-slate-700">Upload Foto Utama</span>
               <span className="mt-1 text-xs text-slate-500">JPG, PNG, WebP, atau AVIF · maksimal 8 MB.</span>
-              <input type="file" className="sr-only" accept="image/jpeg,image/png,image/webp,image/avif" onChange={handleMainImageChange} disabled={uploadingMain} aria-label="Upload foto utama" />
+              <input id="main-image-upload" name="mainImage" type="file" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" accept="image/jpeg,image/png,image/webp,image/avif" onChange={handleMainImageChange} disabled={uploadingMain} aria-label="Upload foto utama" />
             </label>
           )}
         </div>
@@ -102,10 +114,10 @@ export function MediaSection({
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div><h3 className="text-sm font-semibold text-slate-900">Galeri</h3><p className="mt-1 text-xs text-slate-500">{data.gallery.length} dari maksimal 10 foto.</p></div>
-          <label className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-within:ring-2 focus-within:ring-emerald-500">
+          <label className="relative inline-flex min-h-10 cursor-pointer items-center gap-2 overflow-hidden rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-within:ring-2 focus-within:ring-emerald-500">
             {uploadingGallery ? <Loader2 size={15} className="animate-spin" aria-hidden="true" /> : <Plus size={15} aria-hidden="true" />}
             Tambah Foto
-            <input type="file" multiple className="sr-only" accept="image/jpeg,image/png,image/webp,image/avif" onChange={handleGalleryUpload} disabled={uploadingGallery || data.gallery.length >= 10} aria-label="Tambah foto galeri" />
+            <input id="gallery-images-upload" name="galleryImages" type="file" multiple className="absolute inset-0 h-full w-full cursor-pointer opacity-0" accept="image/jpeg,image/png,image/webp,image/avif" onChange={handleGalleryUpload} disabled={uploadingGallery || data.gallery.length >= 10} aria-label="Tambah foto galeri" />
           </label>
         </div>
 

@@ -5,6 +5,7 @@ import {
   ArrowUpRight,
   Facebook,
   Instagram,
+  Sparkles,
 } from "lucide-react";
 import { FeaturedProjectCard } from "@/components/marketing/projects/FeaturedProjectCard";
 import { siteConfig } from "@/config/site";
@@ -135,26 +136,45 @@ export function HomeAbout() {
 }
 
 export async function HomeGallery() {
-  const { projects, error } = await getFeaturedProjects(6);
+  const { projects, error } = await getFeaturedProjects(3);
   const hasSingleProject = !error && projects.length === 1;
 
   return (
-    <section
-      id="galeri"
-      className="scroll-mt-[var(--header-height)] bg-transparent pt-10 pb-8 text-foreground md:pt-12 md:pb-10 lg:pb-12"
-      aria-labelledby="gallery-title"
-    >
+    <div className="bg-transparent pt-14 md:pt-20 lg:pt-24">
       <div className="site-container">
         <ScrollReveal>
-        <header className="mb-7 flex flex-col items-end text-right lg:mb-8">
-          <p className="site-eyebrow text-primary before:bg-primary">Proyek Titik Huni</p>
-          <h2
-            id="gallery-title"
-            className="mt-3 text-balance text-[clamp(2rem,3.4vw,3.25rem)] font-medium leading-[1.05] tracking-[-0.045em] text-foreground"
-          >
-            Project <span className="text-primary">Finished</span>
-          </h2>
-        </header>
+          <header className="mb-6 flex items-end justify-between gap-4 md:mb-8">
+            <div>
+              <p className="site-eyebrow text-primary before:bg-primary">Proyek Titik Huni</p>
+              <h2
+                id="gallery-title"
+                className="mt-3 text-balance text-[clamp(1.875rem,3.2vw,3rem)] font-medium leading-[1.06] tracking-[-0.04em] text-foreground"
+              >
+                Project <span className="text-primary">Finished</span>
+              </h2>
+            </div>
+
+            {!error && projects.length > 0 ? (
+              <>
+                <Link
+                  href="/proyek"
+                  className="site-link-editorial hidden shrink-0 md:inline-flex"
+                >
+                  Lihat semua proyek
+                  <ArrowRight size={16} aria-hidden="true" />
+                </Link>
+                {!hasSingleProject ? (
+                  <p
+                    className="flex shrink-0 items-center gap-1.5 pb-1 text-[0.7rem] font-medium uppercase tracking-[0.14em] text-foreground-soft md:hidden"
+                    aria-hidden="true"
+                  >
+                    Geser
+                    <ArrowRight size={14} className="motion-safe:animate-pulse" />
+                  </p>
+                ) : null}
+              </>
+            ) : null}
+          </header>
         </ScrollReveal>
 
         {error ? (
@@ -163,8 +183,64 @@ export async function HomeGallery() {
             <p className="mt-2 text-sm text-foreground-muted">Silakan coba kembali beberapa saat lagi.</p>
           </div>
         ) : projects.length ? (
-          <div className={hasSingleProject ? "max-w-[28rem]" : "grid grid-cols-1 gap-x-5 gap-y-7 md:grid-cols-2 lg:grid-cols-3 lg:gap-x-6"}>
-            {projects.map((project, index) => <FeaturedProjectCard key={project.id} project={project} wide={hasSingleProject} eager={index === 0} />)}
+          <div
+            className={
+              hasSingleProject
+                ? "grid gap-5 sm:grid-cols-2 lg:max-w-4xl"
+                : "-mx-5 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto overscroll-x-contain px-5 pb-4 sm:-mx-7 sm:scroll-px-7 sm:px-7 md:mx-0 md:grid md:grid-cols-2 md:gap-5 md:overflow-visible md:px-0 md:pb-0 lg:grid-cols-4 lg:gap-6 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            }
+          >
+            {projects.map((project, index) => (
+              <div
+                key={project.id}
+                className="flex w-[82%] max-w-[22rem] shrink-0 snap-start sm:w-[22rem] md:w-auto md:max-w-none"
+              >
+                <FeaturedProjectCard project={project} wide={hasSingleProject} eager={index === 0} />
+              </div>
+            ))}
+
+            {/* Kartu terakhir: Lihat Semua Proyek (CTA) */}
+            <div className="flex w-[82%] max-w-[22rem] shrink-0 snap-start sm:w-[22rem] md:w-auto md:max-w-none">
+              <article className="flex h-full w-full min-w-0 flex-1">
+                <Link
+                  href="/proyek"
+                  aria-label="Jelajahi seluruh portofolio proyek Titik Huni"
+                  className="group flex h-full w-full flex-col rounded-[1rem] transition-transform duration-300 motion-safe:hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+                >
+                  <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[1rem] bg-primary">
+                    <Image
+                      src="/assets/images/rumah-candibinangun-sleman.jpg"
+                      alt="Lihat semua proyek portofolio Titik Huni"
+                      fill
+                      sizes="(max-width: 767px) 85vw, (max-width: 1023px) 50vw, 25vw"
+                      className="object-cover blur-[2px] grayscale transition-[filter,transform] duration-700 ease-out opacity-60 motion-safe:group-hover:scale-[1.04] group-hover:blur-sm group-hover:opacity-80"
+                    />
+                    <div className="absolute inset-0 bg-primary/20 mix-blend-overlay transition-colors duration-300" />
+                  </div>
+
+                  <div className="relative z-10 mx-2 -mt-7 flex flex-1 flex-col rounded-[0.85rem] border border-primary-800 bg-primary p-4 text-white shadow-[0_18px_35px_-22px_rgba(35,68,56,0.5)] sm:mx-3 sm:-mt-8 sm:p-5">
+                    <p className="flex items-center gap-1.5 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-white/75">
+                      <Sparkles size={12} className="shrink-0 text-emerald-300" aria-hidden="true" />
+                      Portofolio Lengkap
+                    </p>
+                    <h3 className="mt-2 text-balance text-[clamp(1.2rem,1.7vw,1.45rem)] font-medium leading-[1.22] tracking-[-0.03em] text-white group-hover:text-emerald-100 transition-colors">
+                      Jelajahi Semua Proyek
+                    </h3>
+                    <p className="mt-2 line-clamp-2 min-h-10 text-[0.8125rem] leading-5 text-white/80">
+                      Temukan inspirasi hunian modern dari portofolio karya Titik Huni.
+                    </p>
+                    <span className="mt-auto flex items-center justify-between gap-3 border-t border-white/20 pt-3 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-white">
+                      Selengkapnya
+                      <ArrowRight
+                        size={16}
+                        className="shrink-0 transition-transform duration-300 motion-safe:group-hover:translate-x-1"
+                        aria-hidden="true"
+                      />
+                    </span>
+                  </div>
+                </Link>
+              </article>
+            </div>
           </div>
         ) : (
           <div className="rounded-3xl border border-border bg-white px-6 py-20 text-center">
@@ -172,20 +248,7 @@ export async function HomeGallery() {
             <p className="mt-2 text-sm text-foreground-muted">Kunjungi kembali untuk melihat karya terbaru Titik Huni.</p>
           </div>
         )}
-
-        <footer className="mt-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-          <p className="max-w-xl text-pretty text-sm leading-6 text-foreground-muted">
-            Jelajahi foto, lokasi, dan detail proyek rumah di Yogyakarta dalam portofolio Titik Huni.
-          </p>
-          <Link
-            href="/proyek"
-            className="site-link-editorial group"
-          >
-            Lihat semua proyek
-            <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" aria-hidden="true" />
-          </Link>
-        </footer>
       </div>
-    </section>
+    </div>
   );
 }

@@ -4,7 +4,6 @@ import { Beranda } from "@/components/Beranda";
 import { Unit } from "@/components/Unit";
 import { FAQs } from "@/components/FAQs";
 import {
-  HomeAbout,
   HomeGallery,
 } from "@/components/marketing/home/HomeSections";
 import { HomeContact } from "@/components/marketing/home/HomeContact";
@@ -64,10 +63,11 @@ export default function Home() {
       >
         <Beranda />
         <div className="home-content-canvas">
-          <HomeAbout />
           <Unit />
-          <HomeGallery />
-          <HomeServices />
+          <section id="arsitek-kontraktor" className="scroll-mt-[var(--header-height)] py-10 md:py-14 lg:py-16">
+            <HomeServices />
+            <HomeGallery />
+          </section>
           <HomeBlog />
           <FAQs />
           <HomeContact />

@@ -32,7 +32,7 @@ export function getUnitRegionSlug(unit: CatalogUnit): FilterKey | null {
   return null;
 }
 
-export function CatalogFilter({ units }: { units: CatalogUnit[] }) {
+export function CatalogFilter({ units, hideStats = false }: { units: CatalogUnit[]; hideStats?: boolean }) {
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
 
   // Dynamic region counts calculated from actual inventory data
@@ -85,7 +85,7 @@ export function CatalogFilter({ units }: { units: CatalogUnit[] }) {
         <div
           role="group"
           aria-label="Filter wilayah properti"
-          className="flex flex-wrap items-center gap-2 sm:gap-2.5"
+          className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto pb-2 -mb-2 scrollbar-hide"
         >
           {filterOptions.map((option) => {
             const isActive = activeFilter === option.key;
@@ -101,7 +101,7 @@ export function CatalogFilter({ units }: { units: CatalogUnit[] }) {
                     : "border-border-strong bg-white/80 text-foreground-muted hover:border-primary hover:text-primary hover:bg-white"
                 }`}
               >
-                <span>{option.label}</span>
+                <span className="whitespace-nowrap">{option.label}</span>
                 <span
                   className={`text-[11px] font-mono tabular-nums ${
                     isActive ? "text-white/80" : "text-foreground-soft"
@@ -115,45 +115,47 @@ export function CatalogFilter({ units }: { units: CatalogUnit[] }) {
         </div>
 
         {/* Dynamic Stats Row: Displays Sleman (3) · Bantul (2) · Tersedia (4) */}
-        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs sm:text-[13px] text-foreground-muted">
-          {activeFilter === "all" ? (
-            <>
-              <span className="font-medium text-foreground">
-                {visibleUnits.length} listing
-              </span>
-              <span className="text-border-strong" aria-hidden="true">·</span>
-              <span className="tabular-nums">
-                Sleman ({stats.sleman})
-              </span>
-              <span className="text-border-strong" aria-hidden="true">·</span>
-              <span className="tabular-nums">
-                Bantul ({stats.bantul})
-              </span>
-              <span className="text-border-strong" aria-hidden="true">·</span>
-              <span className="tabular-nums">
-                {stats.tersedia} unit tersedia
-              </span>
-            </>
-          ) : (
-            <>
-              <span className="font-medium text-foreground">
-                {visibleUnits.length} listing di {currentLabel}
-              </span>
-              <span className="text-border-strong" aria-hidden="true">·</span>
-              <span className="tabular-nums">
-                {available.length} unit tersedia
-              </span>
-            </>
-          )}
-          {minimumPrice !== null && (
-            <>
-              <span className="text-border-strong" aria-hidden="true">·</span>
-              <span>
-                Mulai <span className="font-semibold text-primary">{formatRupiah(minimumPrice)}</span>
-              </span>
-            </>
-          )}
-        </div>
+        {!hideStats && (
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs sm:text-[13px] text-foreground-muted">
+            {activeFilter === "all" ? (
+              <>
+                <span className="font-medium text-foreground">
+                  {visibleUnits.length} listing
+                </span>
+                <span className="text-border-strong" aria-hidden="true">·</span>
+                <span className="tabular-nums">
+                  Sleman ({stats.sleman})
+                </span>
+                <span className="text-border-strong" aria-hidden="true">·</span>
+                <span className="tabular-nums">
+                  Bantul ({stats.bantul})
+                </span>
+                <span className="text-border-strong" aria-hidden="true">·</span>
+                <span className="tabular-nums">
+                  {stats.tersedia} unit tersedia
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="font-medium text-foreground">
+                  {visibleUnits.length} listing di {currentLabel}
+                </span>
+                <span className="text-border-strong" aria-hidden="true">·</span>
+                <span className="tabular-nums">
+                  {available.length} unit tersedia
+                </span>
+              </>
+            )}
+            {minimumPrice !== null && (
+              <>
+                <span className="text-border-strong" aria-hidden="true">·</span>
+                <span>
+                  Mulai <span className="font-semibold text-primary">{formatRupiah(minimumPrice)}</span>
+                </span>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       <p className="sr-only" role="status" aria-live="polite">

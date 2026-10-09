@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -46,13 +46,16 @@ const emptyProject: ProjectEditorData = {
   published: false,
 };
 
-function slugify(value: string) {
-  return value
+function slugify(value: string, allowTrailing = false) {
+  const slug = value
     .toLowerCase()
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/[^a-z0-9\-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+/g, "");
+  
+  return allowTrailing ? slug : slug.replace(/-+$/, "");
 }
 
 export function ProjectEditor({
@@ -65,6 +68,7 @@ export function ProjectEditor({
   const [slugTouched, setSlugTouched] = useState(Boolean(initialData?.slug));
   const [uploading, setUploading] = useState(false);
   const [pending, startTransition] = useTransition();
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
   const hasUnsavedChanges = useMemo(
     () => JSON.stringify(data) !== JSON.stringify(initialData ?? emptyProject),
@@ -89,6 +93,16 @@ export function ProjectEditor({
     key: K,
     value: ProjectEditorData[K]
   ) => setData((current) => ({ ...current, [key]: value }));
+
+  const openImagePicker = () => imageInputRef.current?.click();
+
+  const handleImageSelection = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const input = event.currentTarget;
+    await uploadFiles(Array.from(input.files ?? []));
+    input.value = "";
+  };
 
   const uploadFiles = async (files: File[]) => {
     if (!files.length) return;
@@ -204,9 +218,7 @@ export function ProjectEditor({
   };
 
   return (
-    <div className="flex flex-col w-full" style={{ flex: "1 1 0%", minHeight: 0 }}>
-      <div className="overflow-y-auto p-4 sm:p-6 lg:p-8" style={{ flex: "1 1 0%", minHeight: 0 }}>
-        <div className="mx-auto w-full max-w-5xl">
+    <div className="mx-auto w-full max-w-5xl">
       <button
         type="button"
         onClick={leaveEditor}
@@ -305,7 +317,10 @@ export function ProjectEditor({
                       value={data.slug}
                       onChange={(event) => {
                         setSlugTouched(true);
-                        setField("slug", slugify(event.target.value));
+                        setField("slug", slugify(event.target.value, true));
+                      }}
+                      onBlur={() => {
+                        setField("slug", data.slug.replace(/-+$/, ""));
                       }}
                       className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm text-slate-900 outline-none"
                       placeholder="rumah-bangunjiwo"
@@ -348,7 +363,12 @@ export function ProjectEditor({
                     cover.
                   </p>
                 </div>
-                <label className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-5 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-100 focus-within:ring-2 focus-within:ring-slate-900">
+                <button
+                  type="button"
+                  onClick={openImagePicker}
+                  disabled={uploading}
+                  className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-5 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+                >
                   {uploading ? (
                     <Loader2
                       size={15}
@@ -359,18 +379,7 @@ export function ProjectEditor({
                     <ImagePlus size={15} aria-hidden="true" />
                   )}
                   Tambah Gambar
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/jpeg,image/png,image/webp,image/avif"
-                    className="sr-only"
-                    disabled={uploading}
-                    onChange={async (event) => {
-                      await uploadFiles(Array.from(event.target.files ?? []));
-                      event.target.value = "";
-                    }}
-                  />
-                </label>
+                </button>
               </div>
 
               {data.gallery_images.length ? (
@@ -444,7 +453,12 @@ export function ProjectEditor({
                   })}
                 </div>
               ) : (
-                <label className="mt-6 flex min-h-[16rem] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 text-center transition hover:border-emerald-400 hover:bg-emerald-50/50">
+                <button
+                  type="button"
+                  onClick={openImagePicker}
+                  disabled={uploading}
+                  className="mt-6 flex min-h-[16rem] w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 text-center transition hover:border-emerald-400 hover:bg-emerald-50/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
+                >
                   <ImagePlus
                     size={40}
                     className="text-slate-300"
@@ -456,18 +470,7 @@ export function ProjectEditor({
                   <span className="mt-1.5 text-[13px] text-slate-500">
                     JPG, PNG, WebP, atau AVIF · maksimal 10 MB per gambar
                   </span>
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/jpeg,image/png,image/webp,image/avif"
-                    className="sr-only"
-                    disabled={uploading}
-                    onChange={async (event) => {
-                      await uploadFiles(Array.from(event.target.files ?? []));
-                      event.target.value = "";
-                    }}
-                  />
-                </label>
+                </button>
               )}
             </section>
           </div>
@@ -572,8 +575,18 @@ export function ProjectEditor({
           </aside>
         </div>
       </form>
-    </div>
-      </div>
+
+      <input
+        ref={imageInputRef}
+        type="file"
+        multiple
+        accept="image/jpeg,image/png,image/webp,image/avif"
+        className="hidden"
+        disabled={uploading}
+        onChange={handleImageSelection}
+        tabIndex={-1}
+        aria-hidden="true"
+      />
     </div>
   );
 }

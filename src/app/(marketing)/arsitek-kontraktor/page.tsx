@@ -1,14 +1,27 @@
 import Image from "next/image";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowUpRight, Check, MessageCircle } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  CheckCircle2,
+  FileText,
+  HardHat,
+  Instagram,
+  KeyRound,
+  MessageCircle,
+  PenTool,
+  Ruler,
+  ShieldCheck,
+} from "lucide-react";
 import { siteConfig } from "@/config/site";
+import { HomeGallery } from "@/components/marketing/home/HomeSections";
 
 export const metadata: Metadata = {
   title:
     "Arsitek & Kontraktor Rumah Jogja | Jasa Desain & Bangun Rumah - Titik Huni",
   description:
-    "Titik Huni menyediakan jasa arsitek dan kontraktor rumah di Yogyakarta. Layanan desain rumah minimalis modern hingga pembangunan rumah dengan kualitas terbaik.",
+    "Titik Huni menyediakan jasa arsitek dan kontraktor terintegrasi di Yogyakarta. Layanan desain rumah minimalis modern hingga pembangunan rumah dengan kualitas dan transparansi biaya.",
   keywords: [
     "arsitek rumah jogja",
     "kontraktor rumah jogja",
@@ -22,221 +35,296 @@ export const metadata: Metadata = {
   },
 };
 
-const services = [
+const steps = [
   {
-    title: "Desain Arsitektur",
+    icon: PenTool,
+    title: "Konsultasi & Konsep Desain",
     description:
-      "Perancangan rumah dengan pendekatan arsitektur minimalis modern yang mempertimbangkan fungsi ruang, pencahayaan alami, dan kenyamanan hunian.",
+      "Diskusi kebutuhan ruang, gaya hidup, dan budget Anda. Kami merumuskannya menjadi desain denah fungsional dan tampak 3D yang estetis.",
   },
   {
-    title: "Perencanaan Bangunan",
+    icon: FileText,
+    title: "RAB & Perencanaan Anggaran",
     description:
-      "Penyusunan gambar kerja, perencanaan struktur, serta estimasi biaya pembangunan untuk memastikan proses pembangunan berjalan dengan baik.",
+      "Penyusunan Rencana Anggaran Biaya (RAB) yang transparan dan mendetail hingga material terkecil, beserta gambar kerja struktur (DED).",
   },
   {
-    title: "Konstruksi Rumah",
+    icon: HardHat,
+    title: "Konstruksi & Pengawasan Ketat",
     description:
-      "Pelaksanaan pembangunan rumah dengan pengawasan kualitas konstruksi agar hasil akhir sesuai dengan desain dan standar pembangunan yang baik.",
-  },
-];
-
-const process = [
-  {
-    title: "Memahami kebutuhan",
-    description:
-      "Proses dimulai dengan kebutuhan ruang, kondisi lahan, dan konteks kehidupan sehari-hari Anda.",
+      "Proses pembangunan fisik oleh tim lapangan berpengalaman, diawasi berkala agar sesuai dengan gambar kerja dan spesifikasi material.",
   },
   {
-    title: "Merancang dengan matang",
+    icon: KeyRound,
+    title: "Serah Terima & Garansi",
     description:
-      "Desain, gambar kerja, struktur, dan estimasi biaya disusun sebagai dasar pembangunan yang jelas.",
-  },
-  {
-    title: "Membangun & mengawasi",
-    description:
-      "Pembangunan dilaksanakan dengan pengawasan kualitas agar hasilnya tetap selaras dengan rancangan.",
+      "Pengecekan kualitas akhir bersama sebelum serah terima kunci. Rumah siap dihuni dengan garansi struktur dan retensi pemeliharaan.",
   },
 ];
 
-const reasons = [
-  "Pendekatan desain yang sederhana dan fungsional",
-  "Material yang dipilih secara jujur dan berkualitas",
-  "Proses desain hingga pembangunan yang terintegrasi",
-  "Fokus pada kualitas ruang dan kenyamanan hunian",
+const pillars = [
+  {
+    icon: CheckCircle2,
+    title: "Satu Tim Terintegrasi",
+    description:
+      "Tidak perlu repot mengoordinasikan arsitek dan tukang secara terpisah. Kami menangani seluruh siklus dari gagasan hingga bangunan berdiri.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Transparansi Biaya",
+    description:
+      "Setiap material dan pekerjaan dirinci jelas di awal dalam RAB. Menghindari pembengkakan biaya tak terduga di tengah proses pembangunan.",
+  },
+  {
+    icon: Ruler,
+    title: "Desain Berorientasi Fungsi",
+    description:
+      "Bukan sekadar indah dipandang. Desain kami mengutamakan sirkulasi udara silang, pencahayaan alami, dan kenyamanan jangka panjang.",
+  },
 ];
 
-const whatsappUrl = `https://wa.me/${siteConfig.organization.telephone.replace(/\D/g, "")}?text=${encodeURIComponent("Halo Titik Huni, saya ingin konsultasi desain dan pembangunan rumah di Yogyakarta.")}`;
+const whatsappUrl = `https://wa.me/${siteConfig.organization.telephone.replace(
+  /\D/g,
+  ""
+)}?text=${encodeURIComponent(
+  "Halo Titik Huni, saya berminat menggunakan jasa arsitek dan kontraktor untuk membangun rumah di Yogyakarta."
+)}`;
 
 export default function ArsitekKontraktorPage() {
   return (
     <main id="main-content" tabIndex={-1} className="min-h-screen bg-surface text-foreground">
       <div className="home-content-canvas min-h-screen">
+        {/* ========================================================
+            1. HERO SECTION
+            ======================================================== */}
         <section
-          aria-labelledby="service-title"
-          className="pb-12 pt-[calc(var(--header-height)+1rem)] sm:pb-14 md:pt-[calc(var(--header-height)+1.5rem)] md:pb-16"
+          aria-labelledby="hero-title"
+          className="pb-14 pt-[calc(var(--header-height)+1.5rem)] sm:pb-20 md:pt-[calc(var(--header-height)+2rem)] md:pb-24"
         >
           <div className="site-container">
-            <nav aria-label="Breadcrumb" className="mb-3.5 text-xs text-foreground-soft sm:mb-4">
+            {/* Breadcrumb */}
+            <nav aria-label="Breadcrumb" className="mb-5 text-xs text-foreground-soft sm:mb-6">
               <ol className="flex items-center gap-2">
-                <li><Link href="/" className="underline-offset-4 hover:text-primary hover:underline">Beranda</Link></li>
-                <li aria-hidden="true">/</li>
-                <li aria-current="page" className="text-foreground">Arsitek &amp; Kontraktor</li>
+                <li>
+                  <Link href="/" className="underline-offset-4 hover:text-primary hover:underline">
+                    Beranda
+                  </Link>
+                </li>
+                <li aria-hidden="true" className="text-border-strong">/</li>
+                <li aria-current="page" className="font-medium text-foreground">
+                  Jasa Arsitek &amp; Kontraktor
+                </li>
               </ol>
             </nav>
 
-            <header className="flex flex-col justify-between gap-5 border-b border-border/80 pb-7 lg:flex-row lg:items-end">
-              <div className="max-w-3xl">
-                <p className="site-eyebrow text-primary before:bg-primary">Arsitek &amp; Kontraktor · Yogyakarta</p>
-                <h1
-                  id="service-title"
-                  className="mt-2 text-balance text-[clamp(2.15rem,4vw,3.5rem)] font-medium leading-[1.06] tracking-[-0.045em]"
-                >
-                  Desain dan pembangunan rumah <span className="text-primary">dalam satu alur.</span>
-                </h1>
-              </div>
-              <div className="max-w-md lg:text-right">
-                <p className="text-pretty text-sm leading-6 text-foreground-muted sm:text-base sm:leading-7">
-                  Wujudkan rumah dengan perencanaan ruang, desain, dan pelaksanaan yang terhubung dari awal.
+            <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-12 xl:gap-16">
+              <div className="lg:col-span-6">
+                <p className="site-eyebrow text-primary before:bg-primary">
+                  Layanan Rancang Bangun · Yogyakarta
                 </p>
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white transition-colors hover:bg-primary-hover"
+                <h1
+                  id="hero-title"
+                  className="mt-3.5 text-balance text-[clamp(2.25rem,4.5vw,4rem)] font-medium leading-[1.05] tracking-[-0.04em] text-foreground"
                 >
-                  <MessageCircle size={16} aria-hidden="true" />
-                  Konsultasi proyek
-                  <ArrowUpRight size={15} aria-hidden="true" />
-                </a>
-              </div>
-            </header>
+                  Bangun rumah impian Anda tanpa{" "}
+                  <span className="text-primary">kerumitan.</span>
+                </h1>
+                <p className="mt-5 text-pretty text-base leading-relaxed text-foreground-muted sm:text-[1.125rem]">
+                  Dari coretan denah hingga serah terima kunci. Titik Huni mengintegrasikan desain arsitektur, perencanaan anggaran terukur, dan eksekusi konstruksi dalam satu tim tepercaya.
+                </p>
 
-            <div className="mt-6 grid overflow-hidden rounded-[1.25rem] border border-border/80 bg-white lg:grid-cols-2">
-              <figure className="relative m-0 aspect-[4/3] overflow-hidden bg-surface-muted lg:aspect-auto lg:min-h-[26rem]">
-                <Image
-                  src="/assets/images/rumah-bangunjiwo-2.jpg"
-                  alt="Fasad rumah modern rancangan Titik Huni"
-                  fill
-                  preload
-                  sizes="(max-width: 1023px) 100vw, 50vw"
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" aria-hidden="true" />
-                <figcaption className="absolute inset-x-0 bottom-0 p-5 text-sm leading-6 text-white sm:p-7">
-                  Desain dan pembangunan rumah di Yogyakarta
-                </figcaption>
-              </figure>
-              <div className="flex flex-col justify-center p-5 sm:p-8 lg:p-10">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Dari gagasan hingga menjadi ruang</p>
-                <h2 className="mt-3 text-2xl font-medium leading-tight tracking-[-0.035em] sm:text-3xl">
-                  Rumah dirancang untuk kehidupan sehari-hari.
-                </h2>
-                <div className="mt-4 max-w-xl space-y-3 text-sm leading-6 text-foreground-muted sm:text-base sm:leading-7">
-                  <p>
-                    Kami membantu merancang dan membangun rumah dengan mempertimbangkan kebutuhan ruang, pencahayaan alami, sirkulasi udara, serta hubungan rumah dengan lingkungan sekitarnya.
-                  </p>
-                  <p>
-                    Mulai dari desain rumah minimalis modern, gambar kerja, dan perencanaan biaya hingga pembangunan dengan pengawasan kualitas.
+                <div className="mt-8 flex flex-wrap items-center gap-4">
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="site-button-primary group w-full sm:w-auto"
+                  >
+                    <MessageCircle size={16} aria-hidden="true" />
+                    Konsultasi Gratis
+                    <ArrowUpRight
+                      size={16}
+                      className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                      aria-hidden="true"
+                    />
+                  </a>
+                  <a href="#cara-kerja" className="site-link-editorial text-sm font-medium">
+                    Pelajari cara kerja kami
+                    <ArrowRight size={15} aria-hidden="true" />
+                  </a>
+                </div>
+              </div>
+
+              <div className="lg:col-span-6">
+                <figure className="group relative aspect-[4/3] w-full overflow-hidden rounded-[1.5rem] bg-surface-muted shadow-[0_16px_40px_-20px_rgba(35,68,56,0.15)] sm:aspect-[16/10] sm:rounded-[1.75rem] lg:aspect-[4/3]">
+                  <Image
+                    src="/assets/images/rumah-bangunjiwo-2.jpg"
+                    alt="Proses desain dan bangun rumah modern Titik Huni di Yogyakarta"
+                    fill
+                    priority
+                    sizes="(max-width: 1023px) 100vw, 50vw"
+                    className="object-cover transition-transform duration-1000 ease-out group-hover:scale-[1.03]"
+                  />
+                  <div
+                    className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10"
+                    aria-hidden="true"
+                  />
+                  <figcaption className="absolute inset-x-3 bottom-3 rounded-2xl border border-white/25 bg-black/45 p-4 text-white shadow-md backdrop-blur-md sm:inset-x-5 sm:bottom-5 sm:p-5">
+                    <p className="text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-emerald-300">
+                      Studio Arsitektur &amp; Konstruksi
+                    </p>
+                    <p className="mt-1 text-sm font-medium leading-snug text-white sm:text-base">
+                      Mewujudkan ruang hidup fungsional dan abadi.
+                    </p>
+                  </figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            2. VALUE PROPOSITIONS / PILLARS
+            ======================================================== */}
+        <section
+          aria-labelledby="pillars-title"
+          className="border-y border-border/80 bg-white py-16 sm:py-20 lg:py-24"
+        >
+          <div className="site-container">
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="site-eyebrow text-primary before:bg-primary">
+                Keunggulan Layanan
+              </p>
+              <h2
+                id="pillars-title"
+                className="mt-3 text-balance text-[clamp(1.85rem,3.2vw,2.75rem)] font-medium leading-[1.1] tracking-[-0.04em] text-foreground"
+              >
+                Mengapa mempercayakan proyek Anda pada kami?
+              </h2>
+              <p className="mt-4 text-pretty text-sm leading-relaxed text-foreground-muted sm:text-base">
+                Membangun rumah tidak harus membingungkan. Kami hadir dengan pendekatan sistematis dan transparan untuk memberikan ketenangan pikiran.
+              </p>
+            </div>
+
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 md:grid-cols-3 md:gap-8 lg:mt-14">
+              {pillars.map((pillar) => (
+                <div
+                  key={pillar.title}
+                  className="group flex flex-col rounded-2xl border border-border bg-white p-6 shadow-[0_4px_20px_-8px_rgba(0,0,0,0.04)] transition-all duration-300 hover:border-primary/40 hover:shadow-[0_12px_30px_-15px_rgba(35,68,56,0.12)] sm:p-8"
+                >
+                  <div className="mb-5 inline-flex size-12 items-center justify-center rounded-xl bg-[var(--sage)] text-primary transition-colors duration-300 group-hover:bg-primary group-hover:text-white">
+                    <pillar.icon size={22} strokeWidth={1.75} aria-hidden="true" />
+                  </div>
+                  <h3 className="text-lg font-medium tracking-tight text-foreground">
+                    {pillar.title}
+                  </h3>
+                  <p className="mt-2.5 text-sm leading-[1.65] text-foreground-muted">
+                    {pillar.description}
                   </p>
                 </div>
-                <ul className="mt-6 grid gap-2 border-t border-border pt-5 text-sm font-medium text-foreground sm:grid-cols-2">
-                  {["Desain arsitektur", "Perencanaan bangunan", "Konstruksi rumah", "Konsultasi di Yogyakarta"].map((item) => (
-                    <li key={item} className="flex items-center gap-2">
-                      <Check size={15} className="shrink-0 text-primary" aria-hidden="true" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              ))}
             </div>
           </div>
         </section>
 
-        <section aria-labelledby="services-title" className="border-y border-border/80 bg-white py-12 sm:py-14 md:py-16">
+        {/* ========================================================
+            3. WORKFLOW / CARA KERJA
+            ======================================================== */}
+        <section id="cara-kerja" className="scroll-mt-24 py-16 sm:py-20 lg:py-24">
           <div className="site-container">
-            <div className="mb-6 flex flex-col justify-between gap-4 sm:mb-8 md:flex-row md:items-end">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Layanan kami</p>
-                <h2 id="services-title" className="mt-1 text-2xl font-medium tracking-tight sm:text-3xl">Tiga tahap, satu visi.</h2>
-              </div>
-              <p className="max-w-md text-sm leading-6 text-foreground-muted sm:text-base sm:leading-7 md:text-right">
-                Setiap keputusan desain tetap terjaga hingga tahap pembangunan.
-              </p>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-3">
-              {services.map((service, index) => (
-                <article key={service.title} className="flex min-w-0 flex-col rounded-[1.25rem] border border-border/80 bg-surface p-5 sm:p-6">
-                  <span className="text-sm font-semibold text-primary">0{index + 1}</span>
-                  <h3 className="mt-5 text-xl font-medium leading-tight tracking-[-0.025em]">{service.title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-foreground-muted">{service.description}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section aria-labelledby="process-title" className="py-12 sm:py-14 md:py-16">
-          <div className="site-container grid gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:gap-10">
-            <div className="max-w-lg">
-              <p className="site-eyebrow text-primary before:bg-primary">Alur kolaborasi</p>
-              <h2 id="process-title" className="mt-2 text-2xl font-medium leading-tight tracking-[-0.035em] sm:text-3xl">
-                Proses yang jelas dari awal.
-              </h2>
-              <p className="mt-3 text-sm leading-6 text-foreground-muted sm:text-base sm:leading-7">
-                Kebutuhan, rancangan, dan pelaksanaan berjalan berurutan agar Anda tahu apa yang dikerjakan di setiap tahap.
-              </p>
-            </div>
-            <ol className="overflow-hidden rounded-[1.25rem] border border-border/80 bg-white">
-              {process.map((step, index) => (
-                <li key={step.title} className="grid gap-3 border-b border-border/80 p-5 last:border-b-0 sm:grid-cols-[3rem_1fr] sm:gap-5 sm:p-6">
-                  <span className="text-sm font-semibold text-primary">0{index + 1}</span>
-                  <div>
-                    <h3 className="text-lg font-medium tracking-[-0.02em]">{step.title}</h3>
-                    <p className="mt-1.5 text-sm leading-6 text-foreground-muted">{step.description}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
-
-        <section aria-labelledby="reasons-title" className="bg-white py-12 sm:py-14 md:py-16">
-          <div className="site-container grid gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:gap-10">
-            <div className="max-w-lg">
-              <p className="site-eyebrow text-primary before:bg-primary">Mengapa Titik Huni</p>
-              <h2 id="reasons-title" className="mt-2 text-2xl font-medium leading-tight tracking-[-0.035em] sm:text-3xl">
-                Rumah yang nyaman dimulai dari keputusan yang tepat.
-              </h2>
-            </div>
-            <ul className="divide-y divide-border/80 border-y border-border/80">
-              {reasons.map((reason) => (
-                <li key={reason} className="flex gap-3 py-4 text-sm font-medium leading-6 text-foreground sm:py-5 sm:text-base">
-                  <Check size={17} className="mt-1 shrink-0 text-primary" aria-hidden="true" />
-                  <span>{reason}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-
-        <section aria-labelledby="service-contact-title" className="py-12 sm:py-14 md:py-16">
-          <div className="site-container">
-            <div className="grid gap-6 rounded-[1.25rem] bg-primary p-6 text-white sm:p-8 md:grid-cols-[1fr_auto] md:items-end md:p-10">
-              <div>
-                <p className="site-eyebrow text-white/70 before:bg-white">Mulai proyek Anda</p>
-                <h2 id="service-contact-title" className="mt-3 max-w-3xl text-balance text-2xl font-medium leading-tight tracking-[-0.035em] sm:text-3xl md:text-4xl">
-                  Konsultasikan rumah impian Anda.
+            <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+              <div className="lg:col-span-5 lg:sticky lg:top-32 lg:self-start">
+                <p className="site-eyebrow text-primary before:bg-primary">Alur Kerja Kami</p>
+                <h2 className="mt-3 text-balance text-[clamp(1.85rem,3.2vw,2.75rem)] font-medium leading-[1.1] tracking-[-0.04em] text-foreground">
+                  Proses jelas di setiap langkah.
                 </h2>
-                <p className="mt-3 max-w-xl text-sm leading-6 text-white/75 sm:text-base sm:leading-7">
-                  Hubungi kami untuk konsultasi desain dan pembangunan rumah di Yogyakarta bersama tim Titik Huni.
+                <p className="mt-4 text-pretty text-sm leading-relaxed text-foreground-muted sm:text-base">
+                  Dari sekadar ide hingga siap dihuni, kami mendampingi Anda di setiap fase dengan laporan progres berkala dan pengawasan terukur.
                 </p>
+
+                <div className="mt-8 hidden lg:block">
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="site-button-primary"
+                  >
+                    Mulai Diskusi Proyek
+                    <ArrowRight size={15} aria-hidden="true" />
+                  </a>
+                </div>
               </div>
-              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-surface">
-                <MessageCircle size={17} aria-hidden="true" />
-                Konsultasi sekarang
-                <ArrowUpRight size={16} aria-hidden="true" />
-              </a>
+
+              <div className="lg:col-span-7">
+                <div className="relative ml-4 space-y-10 border-l border-primary/20 pl-7 sm:ml-6 sm:space-y-12 sm:pl-9">
+                  {steps.map((step) => (
+                    <div key={step.title} className="group relative">
+                      {/* Timeline Node */}
+                      <span className="absolute -left-[2.35rem] sm:-left-[2.85rem] top-0.5 flex size-8 items-center justify-center rounded-full border border-primary/30 bg-white text-primary shadow-xs transition-colors duration-300 group-hover:bg-primary group-hover:text-white">
+                        <step.icon size={15} strokeWidth={1.8} aria-hidden="true" />
+                      </span>
+
+                      <h3 className="text-xl font-medium tracking-tight text-foreground">
+                        {step.title}
+                      </h3>
+                      <p className="mt-2 text-sm leading-[1.65] text-foreground-muted sm:text-base">
+                        {step.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            4. PORTFOLIO SHOWCASE
+            ======================================================== */}
+        <section aria-labelledby="gallery-title" className="border-t border-border/80 bg-white pb-16 sm:pb-20 md:pb-24">
+          <HomeGallery />
+        </section>
+
+        {/* ========================================================
+            5. BOTTOM CTA
+            ======================================================== */}
+        <section className="py-16 sm:py-20 lg:py-24">
+          <div className="site-container">
+            <div className="relative overflow-hidden rounded-[2rem] border border-primary/30 bg-primary px-6 py-14 text-center text-white shadow-[0_20px_50px_-25px_rgba(35,68,56,0.3)] sm:px-12 sm:py-20 md:px-16">
+              <div
+                className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent pointer-events-none"
+                aria-hidden="true"
+              />
+              <div className="relative z-10 mx-auto max-w-2xl">
+                <h2 className="text-balance text-3xl font-medium tracking-tight text-white sm:text-4xl md:text-5xl">
+                  Mari rencanakan rumah impian Anda.
+                </h2>
+                <p className="mt-4 text-pretty text-base leading-relaxed text-white/85 sm:text-lg">
+                  Konsultasikan lahan, kebutuhan ruang, dan perkiraan budget Anda bersama tim arsitek Titik Huni tanpa komitmen awal.
+                </p>
+
+                <div className="mt-8 flex flex-wrap justify-center gap-3.5">
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="site-button-hero"
+                  >
+                    <MessageCircle size={17} aria-hidden="true" />
+                    Hubungi via WhatsApp
+                    <ArrowUpRight size={15} aria-hidden="true" />
+                  </a>
+                  <a
+                    href={siteConfig.social.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[11px] border border-white/30 bg-white/10 px-5 py-2.5 text-[14px] font-medium text-white backdrop-blur-xs transition-colors duration-300 hover:bg-white/20"
+                  >
+                    <Instagram size={16} aria-hidden="true" />
+                    Instagram Titik Huni
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </section>

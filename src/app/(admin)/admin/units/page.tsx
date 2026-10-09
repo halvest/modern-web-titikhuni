@@ -37,17 +37,37 @@ type Unit = {
 
 type Category = { id: string; name: string };
 
-export default async function UnitsPage() {
+export default async function UnitsPage(props: {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const searchParams = await props.searchParams;
+  const page = parseInt((searchParams?.page as string) || "1");
+  const search = (searchParams?.search as string) || "";
+  const filterStatus = (searchParams?.status as string) || "all";
+  const pageSize = 10;
+  
   const { supabase } = await requireAdminPage();
 
-  const [{ data: units, error: unitsError }, { data: categories, error: categoriesError }] = await Promise.all([
-    supabase
-      .from("units")
-      .select(
-        "id, title, slug, location, price, status, image_url, category_id, land_area, bedroom_count, bathroom_count, seo_title, meta_description, is_indexed, og_image, is_featured, featured_order, updated_at, categories(id, name)"
-      )
-      .is("deleted_at", null)
-      .order("priority_order", { ascending: true }),
+  // 1. Fetch paginated units
+  let query = supabase
+    .from("units")
+    .select(
+      "id, title, slug, location, price, status, image_url, category_id, land_area, bedroom_count, bathroom_count, seo_title, meta_description, is_indexed, og_image, is_featured, featured_order, updated_at, categories(id, name)",
+      { count: "exact" }
+    )
+    .is("deleted_at", null)
+    .order("priority_order", { ascending: true })
+    .range((page - 1) * pageSize, page * pageSize - 1);
+
+  if (search) {
+    query = query.ilike("title", `%${search}%`);
+  }
+  if (filterStatus !== "all") {
+    query = query.eq("status", filterStatus);
+  }
+
+  const [{ data: units, error: unitsError, count }, { data: categories, error: categoriesError }] = await Promise.all([
+    query,
     supabase.from("categories").select("id, name").order("name"),
   ]);
 
@@ -58,13 +78,13 @@ export default async function UnitsPage() {
   }));
   const allCategories = (categories as Category[]) ?? [];
 
-  // Server-side KPI computation
-  const total = allUnits.length;
-  const available = allUnits.filter((u) => u.status === "Tersedia").length;
-  const booked = allUnits.filter((u) => u.status === "Booked").length;
-  const sold = allUnits.filter(
-    (u) => u.status === "Sold" || u.status === "Terjual"
-  ).length;
+  // Server-side KPI computation - To avoid memory leak, just use count queries
+  const [{ count: total }, { count: available }, { count: booked }, { count: sold }] = await Promise.all([
+    supabase.from("units").select("*", { count: "exact", head: true }).is("deleted_at", null),
+    supabase.from("units").select("*", { count: "exact", head: true }).is("deleted_at", null).eq("status", "Tersedia"),
+    supabase.from("units").select("*", { count: "exact", head: true }).is("deleted_at", null).eq("status", "Booked"),
+    supabase.from("units").select("*", { count: "exact", head: true }).is("deleted_at", null).in("status", ["Sold", "Terjual"]),
+  ]);
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-8 sm:space-y-10 w-full pb-10">
@@ -103,7 +123,7 @@ export default async function UnitsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 lg:gap-6">
         <KpiCard
           label="Total Unit"
-          value={total}
+          value={total ?? 0}
           description="Keseluruhan listing properti"
           iconBg="bg-gradient-to-br from-blue-100 to-indigo-50"
           iconColor="text-blue-600"
@@ -111,7 +131,7 @@ export default async function UnitsPage() {
         />
         <KpiCard
           label="Tersedia"
-          value={available}
+          value={available ?? 0}
           description="Unit siap dipasarkan"
           iconBg="bg-gradient-to-br from-emerald-100 to-teal-50"
           iconColor="text-emerald-600"
@@ -119,7 +139,7 @@ export default async function UnitsPage() {
         />
         <KpiCard
           label="Booked"
-          value={booked}
+          value={booked ?? 0}
           description="Sedang dalam proses KPR/cicilan"
           iconBg="bg-gradient-to-br from-amber-100 to-orange-50"
           iconColor="text-amber-600"
@@ -127,7 +147,7 @@ export default async function UnitsPage() {
         />
         <KpiCard
           label="Terjual"
-          value={sold}
+          value={sold ?? 0}
           description="Properti yang sudah serah terima"
           iconBg="bg-gradient-to-br from-violet-100 to-fuchsia-50"
           iconColor="text-violet-600"
@@ -136,7 +156,7 @@ export default async function UnitsPage() {
       </div>
 
       {/* Client Workspace: Filters + Table */}
-      {!unitsError && <UnitsWorkspace units={unitsWithUpdatedLabels} categories={allCategories} />}
+      {!unitsError && <UnitsWorkspace units={unitsWithUpdatedLabels} categories={allCategories} totalCount={count ?? 0} />}
     </div>
   );
 }
@@ -180,3 +200,4 @@ function KpiCard({
     </div>
   );
 }
+

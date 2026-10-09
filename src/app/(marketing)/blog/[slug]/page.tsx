@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server";
+import { supabase } from "@/lib/supabaseClient";
 import { notFound, permanentRedirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,6 +14,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+export const revalidate = 3600; // ISR 1 hour
+
 // ✅ 1. OPTIMASI METADATA & SEO (Target Top 5)
 export async function generateMetadata({
   params,
@@ -21,7 +23,6 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = await createClient();
   const { data: post } = await supabase
     .from("posts")
     .select("title, excerpt, featured_image, seo_title, meta_description, canonical_url, og_image, is_indexed")
@@ -63,7 +64,6 @@ export default async function BlogDetailPage({
 }) {
   const { slug } = await params;
   const cleanSlug = decodeURIComponent(slug).toLowerCase().trim();
-  const supabase = await createClient();
 
   // ✅ 2. PENGAMBILAN DATA PARALEL (ISR Optimized)
   const [postRes, unitsRes, recentPostsRes] = await Promise.all([
@@ -231,7 +231,8 @@ export default async function BlogDetailPage({
                       src={post.featured_image}
                       alt={post.title}
                       fill
-                      preload
+                      priority
+                      quality={80}
                       sizes="(max-width: 1023px) 100vw, 50vw"
                       className="object-cover"
                     />

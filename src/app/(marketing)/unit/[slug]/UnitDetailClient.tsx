@@ -151,7 +151,7 @@ export default function UnitDetailClient({ unit }: { unit: UnitDetail }) {
 
                   <div className="mt-6 grid grid-cols-2 overflow-hidden rounded-xl border border-border bg-white sm:grid-cols-5">
                     {quickSpecs.map(({ icon: Icon, label, value }, index) => (
-                      <div key={label} className={`flex min-w-0 items-center gap-2.5 px-3 py-3.5 sm:px-4 ${index % 2 === 1 ? "border-l border-border" : ""} ${index >= 2 ? "border-t border-border" : ""} ${index > 0 ? "sm:border-l sm:border-border" : ""} sm:border-t-0`}>
+                      <div key={label} className={`flex min-w-0 items-center gap-2.5 px-3 py-3.5 sm:px-4 ${index % 2 === 1 ? "border-l border-border" : ""} ${index >= 2 ? "border-t border-border" : ""} ${index > 0 ? "sm:border-l sm:border-border" : ""} sm:border-t-0 ${index === quickSpecs.length - 1 && quickSpecs.length % 2 !== 0 ? "col-span-2 sm:col-span-1" : ""}`}>
                         <Icon size={18} className="shrink-0 text-primary" strokeWidth={1.7} aria-hidden="true" />
                         <div className="min-w-0"><p className="text-[10px] font-semibold uppercase tracking-wider text-foreground-soft">{label}</p><p className="truncate text-sm font-semibold text-foreground">{value}</p></div>
                       </div>

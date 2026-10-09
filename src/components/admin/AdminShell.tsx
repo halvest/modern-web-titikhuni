@@ -105,11 +105,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         </header>
 
         <main 
-          className={`flex flex-col ${
-            pathname.endsWith("/new") || pathname.includes("/edit/")
-              ? "overflow-hidden"
-              : "overflow-y-auto p-4 sm:p-6 lg:p-8"
-          }`}
+          className="flex flex-col overflow-y-auto p-4 sm:p-6 lg:p-8"
           style={{ flex: "1 1 0%", minHeight: 0 }}
         >
           {children}

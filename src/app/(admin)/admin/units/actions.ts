@@ -310,7 +310,7 @@ export async function deleteUnit(id: string) {
 
     const { data: unit, error: fetchError } = await supabase
       .from("units")
-      .select("id, slug")
+      .select("id, slug, image_url, gallery")
       .eq("id", id)
       .is("deleted_at", null)
       .maybeSingle();
@@ -333,6 +333,20 @@ export async function deleteUnit(id: string) {
       .maybeSingle();
     if (dbError) return { error: dbError.message };
     if (!deleted) return { error: "Unit tidak ditemukan atau tidak dapat dihapus." };
+
+    // Hapus file fisik gambar di Supabase Storage
+    const allImages = [unit.image_url, ...(unit.gallery || [])].filter(Boolean) as string[];
+    const pathsToRemove = allImages
+      .filter((url) => url.includes("/storage/v1/object/public/properti/"))
+      .map((url) => {
+        const parts = url.split("/storage/v1/object/public/properti/");
+        return parts.length > 1 ? parts[1] : null;
+      })
+      .filter(Boolean) as string[];
+
+    if (pathsToRemove.length > 0) {
+      await supabase.storage.from("properti").remove(pathsToRemove);
+    }
 
     revalidateUnitPaths(unit.slug);
     return { success: true };

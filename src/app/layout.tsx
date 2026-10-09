@@ -29,6 +29,7 @@ export const viewport: Viewport = {
 /* ================================
 SEO GLOBAL METADATA
 ================================ */
+import NextTopLoader from "nextjs-toploader";
 import { siteConfig } from "@/config/site";
 
 const SITE_URL = siteConfig.url;
@@ -132,6 +133,19 @@ export default function RootLayout({
           "bg-background text-foreground antialiased selection:bg-emerald-100 selection:text-emerald-950"
         )}
       >
+        <NextTopLoader
+          color="#234438"
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow="0 0 10px #234438,0 0 5px #234438"
+          zIndex={1600}
+          showAtBottom={false}
+        />
         {children}
 
         {/* Analytics & UI Tools */}
