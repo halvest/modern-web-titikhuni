@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, LockKeyhole, MapPin } from "lucide-react";
+import { isSupabaseStorageUrl } from "@/lib/images/is-supabase-image";
 
 export type UnitCardData = {
   id: string;
@@ -73,6 +74,7 @@ export function UnitCard({
             priority={index < (variant === "featured" ? 1 : 2)}
             loading={index < (variant === "featured" ? 1 : 2) ? undefined : "lazy"}
             quality={75}
+            unoptimized={isSupabaseStorageUrl(unit.image_url)}
             sizes={variant === "featured"
               ? "(max-width: 639px) 86vw, (max-width: 1023px) 44vw, 380px"
               : "(max-width: 639px) 92vw, (max-width: 1023px) 48vw, 380px"}

@@ -17,14 +17,14 @@ const primaryLinks = [
   { href: "/proyek", label: "Portfolio proyek" },
   { href: "/arsitek-kontraktor", label: "Arsitek & kontraktor" },
   { href: "/tentang-kami", label: "Tentang kami" },
-  { href: "/blog", label: "Jurnal & panduan" },
+  { href: "/blog", label: "Blog & panduan" },
 ];
 
 const serviceLinks = [
   { href: "/unit", label: "Rumah siap huni & indent" },
   { href: "/arsitek-kontraktor", label: "Desain arsitektur tropis" },
   { href: "/arsitek-kontraktor", label: "Konstruksi & bangun baru" },
-  { href: "/unit", label: "Kawasan Sleman & Bantul" },
+  { href: "/unit", label: "Kawasan Yogyakarta" },
   { href: "/arsitek-kontraktor", label: "Konsultasi perencanaan" },
 ];
 
@@ -55,6 +55,7 @@ export function Footer() {
                 width={678}
                 height={166}
                 sizes="170px"
+                unoptimized
                 className="h-auto w-36 brightness-0 invert md:w-44"
               />
             </Link>
@@ -64,7 +65,7 @@ export function Footer() {
             </p>
 
             <p className="mt-2.5 max-w-sm text-sm leading-relaxed text-white/60">
-              Developer properti dan studio perancangan arsitektur berorientasi kenyamanan hidup di kawasan Sleman dan Bantul, D.I. Yogyakarta.
+              Developer properti dan studio perancangan arsitektur berorientasi kenyamanan hidup di kawasan Yogyakarta dan sekitarnya.
             </p>
 
             {/* Studio Status Indicator */}
@@ -163,11 +164,11 @@ export function Footer() {
               <div className="flex items-start gap-2.5">
                 <MapPin size={16} className="mt-1 shrink-0 text-emerald-400" aria-hidden="true" />
                 <p className="leading-relaxed">
-                  Jl. Duwet, Kledokan, Caturtunggal,
+                  Jl. Gondang Legi, Wedomartani,
                   <br />
-                  Kec. Depok, Sleman,
+                  Kec. Ngemplak, Sleman,
                   <br />
-                  D.I. Yogyakarta 55281
+                  D.I. Yogyakarta 55584
                 </p>
               </div>
 

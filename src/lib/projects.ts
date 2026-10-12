@@ -1,4 +1,5 @@
-import { createClient } from "@/utils/supabase/server";
+import { cache } from "react";
+import { createPublicClient } from "@/utils/supabase/server";
 
 export type Project = {
   id: string;
@@ -19,7 +20,7 @@ const PROJECT_FIELDS =
   "id, title, slug, location, short_description, cover_image, gallery_images, featured, featured_order, published, created_at, updated_at";
 
 export async function getFeaturedProjects(limit = 6) {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("projects")
     .select(PROJECT_FIELDS)
@@ -32,7 +33,7 @@ export async function getFeaturedProjects(limit = 6) {
 }
 
 export async function getPublishedProjects() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("projects")
     .select(PROJECT_FIELDS)
@@ -49,7 +50,7 @@ export async function getPublishedProjectsPage(page = 1, pageSize = 9) {
   const safePageSize = Math.min(24, Math.max(1, Math.trunc(pageSize)));
   const from = (safePage - 1) * safePageSize;
   const to = from + safePageSize - 1;
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, count, error } = await supabase
     .from("projects")
     .select(PROJECT_FIELDS, { count: "exact" })
@@ -68,8 +69,8 @@ export async function getPublishedProjectsPage(page = 1, pageSize = 9) {
   };
 }
 
-export async function getPublishedProjectBySlug(slug: string) {
-  const supabase = await createClient();
+export const getPublishedProjectBySlug = cache(async (slug: string) => {
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("projects")
     .select(PROJECT_FIELDS)
@@ -78,4 +79,4 @@ export async function getPublishedProjectBySlug(slug: string) {
     .maybeSingle();
 
   return { project: data as Project | null, error };
-}
+});

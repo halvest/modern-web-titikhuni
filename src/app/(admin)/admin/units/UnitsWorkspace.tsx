@@ -128,7 +128,7 @@ function UnitThumbnail({ src, alt }: { src: string | null; alt: string }) {
   }
   return (
     <div className="relative w-16 h-11 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0">
-      <Image src={src} alt={alt} fill sizes="64px" className="object-cover" loading="lazy" />
+      <Image src={src} alt={alt} fill sizes="64px" className="object-cover" loading="lazy" unoptimized />
     </div>
   );
 }
@@ -424,7 +424,7 @@ function MobileUnitCard({ unit, onDeleted }: { unit: Unit; onDeleted: (id: strin
     <div className="bg-white rounded-[1.25rem] border border-slate-200/70 shadow-[0_2px_20px_rgb(0,0,0,0.02)] overflow-hidden transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
       {unit.image_url ? (
         <div className="relative w-full h-36 bg-slate-100">
-          <Image src={unit.image_url} alt={unit.title} fill sizes="(max-width: 768px) 100vw" className="object-cover" loading="lazy" />
+          <Image src={unit.image_url} alt={unit.title} fill sizes="(max-width: 768px) 100vw" className="object-cover" loading="lazy" unoptimized />
         </div>
       ) : (
         <div className="w-full h-24 bg-slate-100 flex items-center justify-center">

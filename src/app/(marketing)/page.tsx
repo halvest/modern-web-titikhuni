@@ -11,9 +11,11 @@ import { HomeBlog } from "@/components/marketing/home/HomeBlog";
 import { HomeServices } from "@/components/marketing/home/HomeServices";
 import { SmoothScrollProvider } from "@/components/SmoothScrollProvider";
 
+export const revalidate = 3600; // Edge ISR 1 hour
+
 const homeTitle = "Titik Huni | Developer Rumah Modern di Yogyakarta";
 const homeDescription =
-  "Jelajahi rumah modern Titik Huni di Yogyakarta. Lihat pilihan hunian di Sleman dan Bantul beserta lokasi, harga, spesifikasi, dan ketersediaan unit.";
+  "Jelajahi rumah modern Titik Huni di Yogyakarta. Lihat pilihan hunian di Yogyakarta dan sekitarnya beserta lokasi, harga, spesifikasi, dan ketersediaan unit.";
 const homeImage = "/assets/images/rumah-bangunjiwo-bantul.jpg";
 
 export const metadata: Metadata = {

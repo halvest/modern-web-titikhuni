@@ -17,9 +17,11 @@ const nextConfig = {
   },
 
   images: {
-    formats: ["image/avif", "image/webp"],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
-    minimumCacheTTL: 2678400, // Cache optimized images for 31 days (prevents re-fetching Supabase images on every request)
+    qualities: [75, 80],
+    formats: ["image/webp"],
+    deviceSizes: [640, 1080, 1920],
+    imageSizes: [64, 128, 256, 384],
+    minimumCacheTTL: 31536000, // Cache optimized images for 365 days on Vercel CDN edge
     // WHITELIST HOSTNAME SUPABASE (PENTING untuk dashboard admin)
     remotePatterns: [
       {

@@ -115,7 +115,7 @@ export function RelationsSection({ data, onChange }: RelationsSectionProps) {
                     />
                     {unit.image_url && (
                       <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-slate-100">
-                        <Image src={unit.image_url} alt="" fill sizes="44px" className="object-cover" />
+                        <Image src={unit.image_url} alt="" fill sizes="44px" className="object-cover" unoptimized />
                       </span>
                     )}
                     <div className="overflow-hidden">

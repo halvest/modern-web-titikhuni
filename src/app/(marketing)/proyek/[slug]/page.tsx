@@ -10,8 +10,16 @@ import {
 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { siteConfig } from "@/config/site";
-import { getPublishedProjectBySlug } from "@/lib/projects";
+import { getPublishedProjects, getPublishedProjectBySlug } from "@/lib/projects";
 import { ProjectGallery } from "@/components/marketing/projects/ProjectGallery";
+import { isSupabaseStorageUrl } from "@/lib/images/is-supabase-image";
+
+export const revalidate = 3600; // Edge ISR 1 hour
+
+export async function generateStaticParams() {
+  const { projects } = await getPublishedProjects();
+  return projects.map((project) => ({ slug: project.slug }));
+}
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -30,6 +38,14 @@ function formatLocation(location: string) {
     .join(", ");
 }
 
+function sanitizeProjectDescription(desc: string, maxLen = 160): string {
+  const clean = desc.replace(/\s+/g, " ").trim();
+  if (clean.length <= maxLen) return clean;
+  const truncated = clean.slice(0, maxLen - 3);
+  const lastSpace = truncated.lastIndexOf(" ");
+  return (lastSpace > 100 ? truncated.slice(0, lastSpace) : truncated) + "...";
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const { project } = await getPublishedProjectBySlug(slug);
@@ -38,27 +54,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "Proyek Tidak Ditemukan | Titik Huni" };
   }
 
+  const isTestProject = project.slug === "tes" || project.title.toLowerCase() === "tes";
   const title = project.title + " — " + project.location + " | Titik Huni";
   const url = siteConfig.url + "/proyek/" + project.slug;
   const image = absoluteImageUrl(project.cover_image);
+  const description = isTestProject
+    ? "Halaman dokumentasi proyek testing Titik Huni."
+    : sanitizeProjectDescription(project.short_description);
 
   return {
     title: { absolute: title },
-    description: project.short_description,
+    description,
     alternates: { canonical: url },
     robots: {
-      index: true,
-      follow: true,
+      index: !isTestProject,
+      follow: !isTestProject,
+      nocache: isTestProject,
       googleBot: {
-        index: true,
-        follow: true,
+        index: !isTestProject,
+        follow: !isTestProject,
         "max-image-preview": "large",
         "max-snippet": -1,
       },
     },
     openGraph: {
       title,
-      description: project.short_description,
+      description,
       url,
       siteName: siteConfig.name,
       locale: siteConfig.locale,
@@ -75,7 +96,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     twitter: {
       card: "summary_large_image",
       title,
-      description: project.short_description,
+      description,
       images: [image],
     },
   };
@@ -163,6 +184,7 @@ export default async function ProjectDetailPage({ params }: Props) {
           alt={"Foto " + project.title + " di " + location}
           fill
           priority
+          unoptimized={isSupabaseStorageUrl(project.cover_image)}
           sizes="100vw"
           className="object-cover"
         />

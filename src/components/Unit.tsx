@@ -2,11 +2,11 @@ import Link from "next/link";
 import { cache } from "react";
 import { ArrowRight } from "lucide-react";
 import { CatalogFilter } from "@/components/marketing/units/catalog-filter";
-import { createClient } from "@/utils/supabase/server";
+import { createPublicClient } from "@/utils/supabase/server";
 import { ScrollReveal } from "@/components/ScrollReveal";
 
 export const getFeaturedUnits = cache(async () => {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
 
   return supabase
     .from("units")
@@ -33,9 +33,10 @@ export async function Unit() {
         <ScrollReveal>
         <header className="grid gap-4 md:grid-cols-12 md:items-end md:gap-8">
           <div className="md:col-span-8">
-            <p className="site-eyebrow text-foreground-soft before:bg-foreground-soft">
-              Listing Titik Huni - Yogyakarta
-            </p>
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-[var(--sage)]/80 px-3.5 py-1 text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-primary shadow-2xs">
+              <span className="size-1.5 rounded-full bg-primary" />
+              <span>Listing Titik Huni - Yogyakarta</span>
+            </div>
             <h2
               id="catalog-title"
               className="mt-4 max-w-4xl text-balance text-[clamp(1.875rem,4.5vw,4.5rem)] font-medium leading-[1.08] tracking-[-0.045em] text-foreground lg:mt-5"

@@ -1,5 +1,6 @@
 import { ArrowUpRight, MessageCircle } from "lucide-react";
 import { siteConfig } from "@/config/site";
+import { ScrollReveal } from "@/components/ScrollReveal";
 
 export const homeWhatsApp = `https://wa.me/${siteConfig.organization.telephone.replace(/\D/g, "")}?text=${encodeURIComponent("Halo Titik Huni, saya ingin konsultasi mengenai hunian dan layanan pembangunan rumah di Yogyakarta.")}`;
 
@@ -11,38 +12,49 @@ export function HomeContact() {
       className="relative scroll-mt-[var(--header-height)] overflow-hidden bg-transparent py-10 text-foreground md:py-14 lg:py-16"
     >
       <div className="site-container">
-        <div className="grid items-center gap-6 rounded-[1.5rem] bg-[linear-gradient(115deg,#f3f8f3_0%,#e8f1e9_100%)] px-6 py-8 sm:px-8 md:py-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-12 lg:px-10 lg:py-12">
-          <div>
-            <p className="site-eyebrow text-primary before:bg-primary">Konsultasi &amp; Kunjungan</p>
-            <h2
-              id="contact-title"
-              className="mt-4 max-w-[45rem] text-balance text-[clamp(2.25rem,4vw,3.5rem)] font-semibold leading-[1.06] tracking-[-0.05em] lg:mt-5"
-            >
-              Punya rencana untuk rumah Anda?
-            </h2>
-          </div>
+        <ScrollReveal>
+          <div className="relative overflow-hidden rounded-3xl sm:rounded-[2rem] border border-[#CFDDD1] bg-[#F1F6F2] p-7 sm:p-10 md:p-12 lg:p-14 shadow-xs">
+            <div className="grid gap-8 lg:grid-cols-12 lg:items-center lg:gap-12">
+              <div className="lg:col-span-7">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-[var(--sage)]/80 px-3.5 py-1 text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-primary shadow-2xs">
+                  <span className="size-1.5 rounded-full bg-primary" />
+                  <span>Konsultasi &amp; Kunjungan</span>
+                </div>
 
-          <div>
-            <p className="max-w-md text-pretty text-sm leading-6 text-foreground-muted sm:text-base sm:leading-7">
-              Diskusikan rencana hunian Anda—mulai dari cek ketersediaan unit,
-              jadwal survei lokasi, hingga rancang bangun rumah di Yogyakarta
-              bersama tim Titik Huni.
-            </p>
-            <a
-              href={homeWhatsApp}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-wa-source="homepage_final_cta"
-              className="site-button-primary mt-6 w-full sm:w-auto"
-            >
-              <span className="inline-flex items-center gap-3">
-                <MessageCircle size={16} aria-hidden="true" />
-                Konsultasi via WhatsApp
-              </span>
-              <ArrowUpRight size={16} aria-hidden="true" />
-            </a>
+                <h2
+                  id="contact-title"
+                  className="mt-3 text-balance text-2xl font-medium tracking-tight text-foreground sm:text-3xl md:text-[2.25rem] md:leading-[1.15]"
+                >
+                  Punya rencana untuk rumah Anda?
+                </h2>
+
+                <p className="mt-3 text-pretty text-sm leading-relaxed text-foreground-muted sm:text-base sm:leading-7">
+                  Diskusikan rencana hunian Anda—mulai dari cek ketersediaan unit,
+                  jadwal survei lokasi, hingga rancang bangun rumah di Yogyakarta
+                  bersama tim Titik Huni.
+                </p>
+              </div>
+
+              <div className="flex flex-col items-start gap-3.5 sm:items-stretch lg:col-span-5 lg:items-end">
+                <a
+                  href={homeWhatsApp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-wa-source="homepage_final_cta"
+                  className="site-button-primary group/cta w-full justify-center py-3.5 text-[15px] font-medium shadow-xs hover:shadow-md transition-all sm:w-auto"
+                >
+                  <MessageCircle size={17} aria-hidden="true" />
+                  <span>Konsultasi via WhatsApp</span>
+                  <ArrowUpRight
+                    size={16}
+                    aria-hidden="true"
+                    className="transition-transform group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5"
+                  />
+                </a>
+              </div>
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   );

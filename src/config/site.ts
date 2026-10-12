@@ -2,7 +2,7 @@ export const siteConfig = {
   name: "Titik Huni",
   url: "https://titikhuni.id",
   description:
-    "Developer properti di Yogyakarta yang menghadirkan rumah minimalis modern di Sleman dan Bantul. Lokasi strategis, desain arsitektur modern, cocok untuk hunian maupun investasi properti.",
+    "Developer properti di Yogyakarta yang menghadirkan rumah minimalis modern di Yogyakarta dan sekitarnya. Lokasi strategis, desain arsitektur modern, cocok untuk hunian maupun investasi properti.",
   locale: "id_ID",
   organization: {
     name: "Titik Huni",

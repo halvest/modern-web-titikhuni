@@ -16,9 +16,13 @@ export function DeleteButton({ id }: { id: string }) {
     try {
       const result = await deleteUnit(id);
       if (result?.error) throw new Error(result.error);
-      toast.success("Unit berhasil dihapus");
+      if (result?.warning) {
+        toast(result.warning, { icon: "⚠️" });
+      } else {
+        toast.success("Unit berhasil dihapus");
+      }
     } catch (error) {
-      toast.error("Gagal menghapus unit");
+      toast.error(error instanceof Error ? error.message : "Gagal menghapus unit");
     } finally {
       setIsPending(false);
     }

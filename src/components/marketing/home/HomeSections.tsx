@@ -45,9 +45,10 @@ export function HomeAbout() {
         <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10 xl:gap-16">
           <ScrollReveal className="lg:col-span-7">
           <article>
-            <p className="site-eyebrow text-primary before:bg-primary">
-              Tentang Titik Huni
-            </p>
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-[var(--sage)]/80 px-3.5 py-1 text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-primary shadow-2xs">
+              <span className="size-1.5 rounded-full bg-primary" />
+              <span>Tentang Titik Huni</span>
+            </div>
 
             <h2
               id="about-title"
@@ -58,7 +59,7 @@ export function HomeAbout() {
 
             <p className="mt-4 max-w-2xl text-pretty text-[1.0625rem] font-normal leading-[1.75] text-foreground-muted lg:mt-6">
               Titik Huni adalah boutique developer rumah modern di Yogyakarta
-              yang mengembangkan hunian terbatas di Sleman dan Bantul. Cahaya
+              yang mengembangkan hunian terbatas di kawasan Yogyakarta dan sekitarnya. Cahaya
               alami, sirkulasi udara, material jujur, dan proporsi ruang menjadi
               dasar setiap desain.
             </p>
@@ -145,7 +146,10 @@ export async function HomeGallery() {
         <ScrollReveal>
           <header className="mb-6 flex items-end justify-between gap-4 md:mb-8">
             <div>
-              <p className="site-eyebrow text-primary before:bg-primary">Proyek Titik Huni</p>
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-[var(--sage)]/80 px-3.5 py-1 text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-primary shadow-2xs">
+                <span className="size-1.5 rounded-full bg-primary" />
+                <span>Proyek Titik Huni</span>
+              </div>
               <h2
                 id="gallery-title"
                 className="mt-3 text-balance text-[clamp(1.875rem,3.2vw,3rem)] font-medium leading-[1.06] tracking-[-0.04em] text-foreground"
@@ -212,6 +216,7 @@ export async function HomeGallery() {
                       src="/assets/images/rumah-candibinangun-sleman.jpg"
                       alt="Lihat semua proyek portofolio Titik Huni"
                       fill
+                      quality={75}
                       sizes="(max-width: 767px) 85vw, (max-width: 1023px) 50vw, 25vw"
                       className="object-cover blur-[2px] grayscale transition-[filter,transform] duration-700 ease-out opacity-60 motion-safe:group-hover:scale-[1.04] group-hover:blur-sm group-hover:opacity-80"
                     />

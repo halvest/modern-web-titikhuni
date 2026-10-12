@@ -63,12 +63,16 @@ export function FAQs() {
                 alt="Logo Titik Huni"
                 fill
                 sizes="(max-width: 1023px) 9rem, 11rem"
+                unoptimized
                 className="object-contain object-left"
               />
             </div>
 
             <header className="mt-7 lg:mt-8">
-              <p className="site-eyebrow text-primary before:bg-primary">Informasi &amp; bantuan</p>
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-[var(--sage)]/80 px-3.5 py-1 text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-primary shadow-2xs">
+                <span className="size-1.5 rounded-full bg-primary" />
+                <span>Informasi &amp; Bantuan</span>
+              </div>
               <h2
                 id="faq-title"
                 className="mt-4 max-w-[30rem] text-balance text-[clamp(2rem,3vw,2.75rem)] font-medium leading-[1.08] tracking-[-0.045em]"
@@ -88,22 +92,17 @@ export function FAQs() {
                 key={item.question}
                 name="home-faq"
                 open={index === 0}
-                className="group border-b border-border"
+                className="group border-b border-[#D5E2D7] transition-colors"
               >
                 <summary className="flex min-h-[4.75rem] cursor-pointer list-none items-center justify-between gap-4 py-4 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary [&::-webkit-details-marker]:hidden">
-                  <span className="flex min-w-0 items-start gap-3 sm:gap-4">
-                    <span className="mt-1 text-[0.65rem] font-semibold tabular-nums tracking-[0.12em] text-primary">
-                      0{index + 1}
-                    </span>
-                    <span className="text-[0.9375rem] font-medium leading-6 tracking-[-0.02em] text-foreground transition-colors duration-300 group-hover:text-primary group-open:text-primary sm:text-base sm:leading-7">
-                      {item.question}
-                    </span>
+                  <span className="text-[0.9375rem] font-medium leading-6 tracking-[-0.02em] text-foreground transition-colors duration-300 group-hover:text-primary group-open:text-primary sm:text-base sm:leading-7">
+                    {item.question}
                   </span>
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-strong text-primary transition-all duration-300 group-open:rotate-45 group-open:border-primary group-open:bg-primary group-open:text-white">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#D5E2D7] bg-[#F4F7F4] text-primary transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-white group-open:rotate-45 group-open:border-primary group-open:bg-primary group-open:text-white">
                     <Plus size={15} aria-hidden="true" />
                   </span>
                 </summary>
-                <div className="pb-5 pl-8 pr-10 sm:pb-6 sm:pl-9 sm:pr-14">
+                <div className="pb-5 pr-8 sm:pb-6 sm:pr-12">
                   <p className="max-w-2xl text-sm leading-7 text-foreground-muted sm:text-[0.9375rem]">
                     {index === 3 ? (
                       <>

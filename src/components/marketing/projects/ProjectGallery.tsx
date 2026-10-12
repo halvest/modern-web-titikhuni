@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
+import { isSupabaseStorageUrl } from "@/lib/images/is-supabase-image";
 
 type ProjectGalleryProps = {
   images: string[];
@@ -189,6 +190,8 @@ export function ProjectGallery({ images, title, location }: ProjectGalleryProps)
                 src={src}
                 alt={altFor(index)}
                 fill
+                loading="lazy"
+                unoptimized={isSupabaseStorageUrl(src)}
                 sizes="(max-width: 640px) 84vw, (max-width: 768px) 62vw, (max-width: 1024px) 46vw, (max-width: 1280px) 38vw, 544px"
                 className="object-cover transition-transform duration-700 ease-out motion-safe:group-hover:scale-[1.04]"
               />
@@ -273,6 +276,7 @@ export function ProjectGallery({ images, title, location }: ProjectGalleryProps)
                 src={images[viewer]}
                 alt={altFor(viewer)}
                 fill
+                unoptimized={isSupabaseStorageUrl(images[viewer])}
                 sizes="100vw"
                 className="object-contain px-2 sm:px-20"
               />

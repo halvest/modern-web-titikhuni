@@ -1,16 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
-import { createClient } from "@/utils/supabase/server";
+import { createPublicClient } from "@/utils/supabase/server";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { isSupabaseStorageUrl } from "@/lib/images/is-supabase-image";
 
 function getCategoryName(category: { name: string } | { name: string }[] | null): string {
-  if (Array.isArray(category)) return category[0]?.name || "Jurnal Titik Huni";
-  return category?.name || "Jurnal Titik Huni";
+  if (Array.isArray(category)) return category[0]?.name || "Blog Titik Huni";
+  return category?.name || "Blog Titik Huni";
 }
 
 export async function HomeBlog() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data: posts, error } = await supabase
     .from("posts")
     .select("id, slug, title, featured_image, categories:category_id(name)")
@@ -23,16 +24,17 @@ export async function HomeBlog() {
 
   return (
     <section
-      id="jurnal"
+      id="blog"
       aria-labelledby="home-blog-title"
       className="scroll-mt-[var(--header-height)] bg-transparent py-8 text-foreground md:py-12 lg:py-10 xl:py-12"
     >
       <div className="site-container">
         <ScrollReveal>
         <header className="mb-6 max-w-3xl lg:mb-7">
-          <p className="site-eyebrow text-primary before:bg-primary">
-            Artikel &amp; Inspirasi
-          </p>
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-[var(--sage)]/80 px-3.5 py-1 text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-primary shadow-2xs">
+            <span className="size-1.5 rounded-full bg-primary" />
+            <span>Artikel &amp; Inspirasi</span>
+          </div>
           <h2
             id="home-blog-title"
             className="mt-4 text-balance text-[clamp(2.35rem,4vw,3.5rem)] font-semibold leading-[1.06] tracking-[-0.05em] lg:mt-5"
@@ -55,6 +57,8 @@ export async function HomeBlog() {
                     alt={post.title}
                     fill
                     loading="lazy"
+                    unoptimized={isSupabaseStorageUrl(post.featured_image)}
+                    quality={75}
                     sizes="6rem"
                     className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                   />

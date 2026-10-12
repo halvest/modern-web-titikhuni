@@ -149,7 +149,7 @@ function MobilePostCard({ post, onDeleted }: { post: Post; onDeleted: (id: strin
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       {post.featured_image ? (
         <div className="relative w-full h-32 bg-slate-100">
-          <Image src={post.featured_image} alt={post.title} fill sizes="(max-width: 768px) 100vw" className="object-cover" loading="lazy" />
+          <Image src={post.featured_image} alt={post.title} fill sizes="(max-width: 768px) 100vw" className="object-cover" loading="lazy" unoptimized />
         </div>
       ) : (
         <div className="w-full h-20 bg-slate-100 flex items-center justify-center">
@@ -259,7 +259,7 @@ export default function PostsWorkspace({ posts: initialPosts }: { posts: Post[] 
                         <div className="flex items-center gap-4">
                           <div className="relative w-16 h-12 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
                             {post.featured_image ? (
-                              <Image src={post.featured_image} alt={post.title} fill sizes="64px" className="object-cover" loading="lazy" />
+                              <Image src={post.featured_image} alt={post.title} fill sizes="64px" className="object-cover" loading="lazy" unoptimized />
                             ) : (
                               <div className="flex items-center justify-center h-full">
                                 <FileText size={16} className="text-slate-400" aria-hidden="true" />

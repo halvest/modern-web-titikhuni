@@ -1,28 +1,33 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/config/site";
 import { REGION_SLUGS } from "@/config/regions";
-import { createClient } from "@/utils/supabase/server";
+import { createPublicClient } from "@/utils/supabase/server";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
 
-  const [unitsResult, postsResult, projectsResult] = await Promise.all([
+  const [unitsResult, postsResult, projectsResult, categoriesResult] = await Promise.all([
     supabase
       .from("units")
       .select("slug, updated_at")
       .is("deleted_at", null)
       .neq("status", "Draft")
+      .neq("status", "Coming Soon")
       .eq("is_indexed", true),
     supabase
       .from("posts")
-      .select("slug, updated_at")
+      .select("slug, updated_at, categories:category_id (slug)")
       .eq("status", "published")
       .eq("is_indexed", true)
       .is("deleted_at", null),
     supabase
       .from("projects")
       .select("slug, updated_at")
-      .eq("published", true),
+      .eq("published", true)
+      .neq("slug", "tes"),
+    supabase
+      .from("categories")
+      .select("slug"),
   ]);
 
   const staticPages: MetadataRoute.Sitemap = [
@@ -55,6 +60,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
+  // Hanya masukkan kategori blog yang memiliki artikel terpublikasi untuk mencegah thin/empty content indexing
+  const publishedCategorySlugs = new Set(
+    (postsResult.data ?? [])
+      .map((p) => {
+        const cat = p.categories as { slug?: string } | { slug?: string }[] | null;
+        return Array.isArray(cat) ? cat[0]?.slug : cat?.slug;
+      })
+      .filter((slug): slug is string => Boolean(slug))
+  );
+
+  const categoryPages: MetadataRoute.Sitemap = (categoriesResult.data ?? [])
+    .filter((cat) => publishedCategorySlugs.has(cat.slug))
+    .map((cat) => ({
+      url: `${siteConfig.url}/blog/category/${cat.slug}`,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    }));
+
   const projectPages: MetadataRoute.Sitemap = (projectsResult.data ?? []).map(
     (project) => ({
       url: `${siteConfig.url}/proyek/${project.slug}`,
@@ -69,6 +92,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...regionPages,
     ...unitPages,
     ...postPages,
+    ...categoryPages,
     ...projectPages,
   ];
 }

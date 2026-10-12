@@ -6,6 +6,8 @@ import { ProjectCard } from "@/components/marketing/projects/ProjectCard";
 import { siteConfig } from "@/config/site";
 import { getPublishedProjectsPage } from "@/lib/projects";
 
+export const revalidate = 3600; // Edge ISR 1 hour
+
 const pageUrl = siteConfig.url + "/proyek";
 const pageTitle = "Portofolio Arsitek & Kontraktor di Yogyakarta";
 const pageDescription =

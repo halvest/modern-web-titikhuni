@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   },
 
   description:
-    "Developer properti premium di Yogyakarta. Spesialis rumah minimalis modern dan jasa arsitek/kontraktor dengan lokasi strategis di Sleman & Bantul.",
+    "Developer properti premium di Yogyakarta. Spesialis rumah minimalis modern dan jasa arsitek/kontraktor dengan lokasi strategis di Yogyakarta dan sekitarnya.",
 
   keywords: [
     "titik huni",
@@ -107,10 +107,6 @@ export const metadata: Metadata = {
     description:
       "Desain rumah modern minimalis dengan lokasi strategis di Yogyakarta.",
     images: [`${SITE_URL}/og.jpg`],
-  },
-
-  alternates: {
-    canonical: SITE_URL,
   },
 };
 

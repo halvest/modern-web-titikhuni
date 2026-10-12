@@ -1,18 +1,57 @@
+import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { resolveSeoRedirect } from "@/lib/seo/redirects";
 import { generateSeoMetadata } from "@/lib/seo/metadata";
 import { siteConfig } from "@/config/site";
-import { createClient } from "@/utils/supabase/server";
+import { createPublicClient } from "@/utils/supabase/server";
 import { isRegionSlug, PROPERTY_REGIONS, type RegionSlug } from "@/config/regions";
 import { RegionPage } from "@/components/marketing/units/RegionPage";
 import UnitDetailClient from "./UnitDetailClient";
 import type { CatalogUnit } from "@/components/marketing/units/unit-card";
 import { formatUnitPrice, getUnitLocationLabel } from "@/lib/unit-display";
 
+export const revalidate = 1800; // Edge ISR 30 mins
+
 type Props = {
   params: Promise<{ slug: string }>;
 };
+
+const getUnitBySlug = cache(async (slug: string) => {
+  const supabase = createPublicClient();
+  const { data: unit, error } = await supabase
+    .from("units")
+    .select(
+      `
+      id, title, slug, category_id, location, village, district, city, province, full_address,
+      price, price_prefix, price_suffix, status, image_url, gallery, selling_points,
+      land_area, building_area, floor_count, bedroom_count, bathroom_count, carport_count,
+      certificate_type, electricity_power, water_source, furnishing,
+      description, priority_order, created_at, updated_at,
+      is_indexed, seo_title, meta_description, canonical_url, og_image,
+      categories ( name, slug )
+    `
+    )
+    .eq("slug", slug)
+    .is("deleted_at", null)
+    .neq("status", "Draft")
+    .maybeSingle();
+
+  return { unit, error };
+});
+
+export async function generateStaticParams() {
+  const regionParams = Object.keys(PROPERTY_REGIONS).map((slug) => ({ slug }));
+  const supabase = createPublicClient();
+  const { data: units } = await supabase
+    .from("units")
+    .select("slug")
+    .is("deleted_at", null)
+    .neq("status", "Draft");
+
+  const unitParams = (units ?? []).map((u) => ({ slug: u.slug }));
+  return [...regionParams, ...unitParams];
+}
 
 /* ============================================================
    GENERATE METADATA
@@ -58,16 +97,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   // Property detail metadata
-  const supabase = await createClient();
-  const { data: unit } = await supabase
-    .from("units")
-    .select(
-      "title, location, village, district, city, province, price, price_prefix, price_suffix, status, image_url, description, seo_title, meta_description, canonical_url, is_indexed, og_image, bedroom_count, building_area, land_area, certificate_type"
-    )
-    .eq("slug", slug)
-    .is("deleted_at", null)
-    .neq("status", "Draft")
-    .single();
+  const { unit } = await getUnitBySlug(slug);
 
   if (!unit) {
     return {
@@ -75,16 +105,37 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const locationLabel = getUnitLocationLabel(unit);
-  const defaultTitle = `${unit.title} | Rumah Dijual di ${locationLabel} | Titik Huni`;
-  const defaultDesc = buildDescription(unit);
+  const isComingSoon = unit.status === "Coming Soon";
+  const isNoindex = isComingSoon || unit.is_indexed === false;
+
+  const conciseLocation = getConciseLocation(unit);
+  let resolvedTitle: string;
+  if (isComingSoon) {
+    resolvedTitle = `${unit.title} — Segera Hadir | Titik Huni`;
+  } else if (unit.seo_title && unit.seo_title.length >= 25) {
+    resolvedTitle = unit.seo_title;
+  } else if (unit.seo_title) {
+    const brandPrefix = unit.seo_title.toLowerCase().includes("titik huni") ? "" : "Titik Huni ";
+    resolvedTitle = `${brandPrefix}${unit.seo_title} | Rumah di ${conciseLocation} | Titik Huni`;
+  } else {
+    const titleBase = unit.title.toLowerCase().startsWith("titik huni")
+      ? unit.title
+      : `Titik Huni ${unit.title}`;
+    resolvedTitle = `${titleBase} | Rumah di ${conciseLocation} | Titik Huni`;
+  }
+
+  const resolvedDesc = isComingSoon
+    ? "Informasi unit properti segera hadir dari Titik Huni di Yogyakarta. Simak pembaruan spesifikasi dan ketersediaan."
+    : unit.meta_description
+    ? sanitizeMetaDescription(unit.meta_description)
+    : buildDescription(unit);
 
   return generateSeoMetadata({
-    title: unit.seo_title || defaultTitle,
-    description: unit.meta_description || defaultDesc,
+    title: resolvedTitle,
+    description: resolvedDesc,
     path: `/unit/${slug}`,
     imageUrl: unit.og_image || unit.image_url || undefined,
-    noindex: unit.is_indexed === false,
+    noindex: isNoindex,
     canonicalUrl: unit.canonical_url || undefined,
   });
 }
@@ -92,6 +143,50 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 /* ============================================================
    HELPERS
    ============================================================ */
+function getConciseLocation(unit: {
+  location?: string | null;
+  village?: string | null;
+  district?: string | null;
+  city?: string | null;
+  province?: string | null;
+}) {
+  const parts = [unit.village, unit.district, unit.city]
+    .map((v) => v?.trim())
+    .filter(Boolean) as string[];
+
+  if (parts.length >= 2) {
+    return parts.slice(0, 2).join(", ");
+  }
+  if (parts.length === 1) return parts[0];
+
+  const legacy = (unit.location || "")
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
+
+  // Normalize known typos
+  const normalized = legacy.map((p) => (p.toLowerCase() === "bebah" ? "Berbah" : p));
+
+  if (normalized.length >= 3 && normalized[normalized.length - 1].toLowerCase().includes("yogya")) {
+    return normalized.slice(0, 2).join(", ");
+  }
+  if (normalized.length >= 2 && normalized[normalized.length - 1].toLowerCase().includes("yogya")) {
+    return normalized[0];
+  }
+  if (normalized.length >= 2) {
+    return normalized.slice(0, 2).join(", ");
+  }
+  return normalized[0] || "Yogyakarta";
+}
+
+function sanitizeMetaDescription(desc: string, maxLen = 160): string {
+  const clean = desc.replace(/\s+/g, " ").trim();
+  if (clean.length <= maxLen) return clean;
+  const truncated = clean.slice(0, maxLen - 3);
+  const lastSpace = truncated.lastIndexOf(" ");
+  return (lastSpace > 100 ? truncated.slice(0, lastSpace) : truncated) + "...";
+}
+
 function buildDescription(unit: {
   title: string;
   location?: string | null;
@@ -134,7 +229,7 @@ export default async function UnitSlugPage({ params }: Props) {
   /* ── REGION PAGE ──────────────────────────────────────── */
   if (isRegionSlug(slug)) {
     const regionSlug = slug as RegionSlug;
-    const supabase = await createClient();
+    const supabase = createPublicClient();
 
     const { data: rawUnits, error } = await supabase
       .from("units")
@@ -183,25 +278,7 @@ export default async function UnitSlugPage({ params }: Props) {
   }
 
   /* ── PROPERTY DETAIL PAGE ────────────────────────────── */
-  const supabase = await createClient();
-
-  const { data: unit, error } = await supabase
-    .from("units")
-    .select(
-      `
-      id, title, slug, category_id, location, village, district, city, province, full_address,
-      price, price_prefix, price_suffix, status, image_url, gallery, selling_points,
-      land_area, building_area, floor_count, bedroom_count, bathroom_count, carport_count,
-      certificate_type, electricity_power, water_source, furnishing,
-      description, priority_order, created_at, updated_at,
-      is_indexed, seo_title, meta_description, canonical_url, og_image,
-      categories ( name, slug )
-    `
-    )
-    .eq("slug", slug)
-    .is("deleted_at", null)
-    .neq("status", "Draft")
-    .single();
+  const { unit, error } = await getUnitBySlug(slug);
 
   if (error || !unit) {
     const redirectPath = await resolveSeoRedirect(`/unit/${slug}`);
@@ -284,7 +361,7 @@ export default async function UnitSlugPage({ params }: Props) {
         },
         offers: {
           "@type": "Offer",
-          price: unit.price,
+          ...(unit.status === "Coming Soon" ? {} : { price: unit.price }),
           priceCurrency: "IDR",
           availability:
             availabilityMap[unit.status ?? ""] ||

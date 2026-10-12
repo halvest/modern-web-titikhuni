@@ -86,6 +86,7 @@ export default async function AdminProjectsPage() {
                     fill
                     sizes="160px"
                     className="object-cover"
+                    unoptimized
                   />
                 </div>
                 <div className="min-w-0">

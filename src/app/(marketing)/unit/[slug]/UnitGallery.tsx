@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Grid2X2, X } from "lucide-react";
+import { isSupabaseStorageUrl } from "@/lib/images/is-supabase-image";
 
 export function UnitGallery({ images, title }: { images: string[]; title: string }) {
   const [open, setOpen] = useState(false);
@@ -98,6 +99,7 @@ export function UnitGallery({ images, title }: { images: string[]; title: string
                 fill
                 preload={index === 0}
                 loading={index === 0 ? undefined : "lazy"}
+                unoptimized={isSupabaseStorageUrl(image)}
                 sizes="(max-width: 767px) 100vw, (max-width: 1535px) 94vw, 1340px"
                 className="object-cover"
               />
@@ -152,7 +154,7 @@ export function UnitGallery({ images, title }: { images: string[]; title: string
             <div className="mx-auto grid max-w-6xl gap-3 sm:grid-cols-2">
               {images.map((image, index) => (
                 <div key={`${image}-lightbox-${index}`} className="relative aspect-[4/3] overflow-hidden rounded-lg bg-slate-900">
-                  <Image src={image} alt={`${title} — foto ${index + 1}`} fill sizes="(max-width: 639px) 100vw, 50vw" className="object-contain" loading="lazy" />
+                  <Image src={image} alt={`${title} — foto ${index + 1}`} fill unoptimized={isSupabaseStorageUrl(image)} sizes="(max-width: 639px) 100vw, 50vw" className="object-contain" loading="lazy" />
                 </div>
               ))}
             </div>

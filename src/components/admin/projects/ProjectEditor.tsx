@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { createClient } from "@/utils/supabase/client";
+import { compressImage } from "@/lib/images/compress-image";
 import {
   createProject,
   updateProject,
@@ -124,14 +125,15 @@ export function ProjectEditor({
     try {
       const urls = await Promise.all(
         files.map(async (file) => {
-          const safeName = file.name
+          const fileToUpload = await compressImage(file);
+          const safeName = fileToUpload.name
             .toLowerCase()
             .replace(/[^a-z0-9.]+/g, "-")
             .replace(/^-+|-+$/g, "");
           const path = crypto.randomUUID() + "-" + safeName;
           const { error } = await supabase.storage
             .from("projects")
-            .upload(path, file, {
+            .upload(path, fileToUpload, {
               cacheControl: "31536000",
               upsert: false,
             });
@@ -403,6 +405,7 @@ export function ProjectEditor({
                             fill
                             sizes="(max-width: 640px) 50vw, 260px"
                             className="object-cover"
+                            unoptimized
                           />
                           {isCover && (
                             <span className="absolute left-2 top-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-2.5 py-1 text-[0.65rem] font-semibold text-white shadow-sm">

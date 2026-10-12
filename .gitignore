@@ -6,8 +6,31 @@
 .pnp.js
 .yarn/install-state.gz
 
-# testing
+# testing & coverage
 /coverage
+/.nyc_output/
+/test-results/
+/playwright-report/
+/blob-report/
+
+# Temporary local testing scripts & scratchpad
+/scratch/
+/scripts/test-unit-storage-lifecycle.mjs
+/scripts/audit-unit-storage.mjs
+/scripts/seo-audit-crawler.mjs
+/scripts/qa-runner-master.mjs
+/scripts/verify-placeholders.mjs
+/scripts/generate-csvs.mjs
+/scripts/test-*.mjs
+/scripts/*audit*.mjs
+/scripts/*qa*.mjs
+/scripts/*crawler*.mjs
+!/scripts/check-home.mjs
+
+# Temporary screenshots, test artifacts & cache
+/screenshots/
+/test-artifacts/
+/playwright/.cache/
 
 # next.js
 /.next/
@@ -16,17 +39,29 @@
 # production
 /build
 
-# misc
+# misc & OS
 .DS_Store
+Thumbs.db
+desktop.ini
 *.pem
 
-# debug
+# debug logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
 # local env files
-.env*.local
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# Supabase temporary files
+/supabase/.temp/
+/supabase/migrations
+
 # agents
 .agents
 
@@ -37,12 +72,19 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# documentation/agents
-*.md
-!README.md
-!readme.md
+# root documentation & agent scratch
+/*.md
+!/README.md
+!/readme.md
+!/LICENSE.md
+!/PANDUAN_ADMIN_TITIKHUNI.md
 out.html
 
-# project directories
-/docs
-/supabase/migrations
+# project documentation exceptions (allow docs and SEO deliverables)
+!/docs/
+!/docs/**
+
+# Temporary test files & artifacts inside docs
+/docs/test/
+/docs/qa-reports/**/screenshots/
+/docs/qa-reports/**/logs/

@@ -96,6 +96,7 @@ export default function AdminSidebar({
               height={40}
               className="w-[110px] h-auto object-contain"
               priority
+              unoptimized
             />
           </div>
         ) : (
@@ -106,6 +107,7 @@ export default function AdminSidebar({
             height={40}
             className="h-8 w-8 object-cover object-left"
             priority
+            unoptimized
           />
         )}
 

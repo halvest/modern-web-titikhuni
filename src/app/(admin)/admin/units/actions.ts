@@ -2,6 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { verifyAdmin } from "@/utils/supabase/server";
+import {
+  extractPropertiStoragePath,
+  isStorageObjectReferenced,
+  removeUnitStorageObjects,
+  auditUnitStorageOrphans,
+} from "@/lib/storage/unit-images";
 
 const ALLOWED_STATUSES = ["Tersedia", "Booked", "Sold", "Coming Soon", "Draft"] as const;
 const ALLOWED_PRICE_PREFIXES = ["Mulai", "Mulai dari", "Harga", "Promo"] as const;
@@ -266,7 +272,7 @@ export async function updateUnit(id: string, formData: FormData) {
 
     const { data: existing, error: readError } = await supabase
       .from("units")
-      .select("slug")
+      .select("slug, image_url, gallery")
       .eq("id", id)
       .single();
     if (readError) return { error: readError.message };
@@ -282,6 +288,33 @@ export async function updateUnit(id: string, formData: FormData) {
     }
 
     let warning: string | undefined;
+
+    // Bersihkan file fisik yang diganti/dihapus dari unit ini (setelah DB berhasil diperbarui)
+    const beforeImages = new Set([existing.image_url, ...(existing.gallery || [])].filter(Boolean) as string[]);
+    const afterImages = new Set([unitData.image_url, ...(unitData.gallery || [])].filter(Boolean) as string[]);
+    const removedUrls = Array.from(beforeImages).filter((url) => !afterImages.has(url));
+
+    if (removedUrls.length > 0) {
+      const pathsToDelete: string[] = [];
+      for (const url of removedUrls) {
+        const storagePath = extractPropertiStoragePath(url);
+        if (storagePath) {
+          // Pastikan aset ini tidak dibagi oleh unit aktif lain
+          const isReferenced = await isStorageObjectReferenced(supabase, storagePath, id);
+          if (!isReferenced) {
+            pathsToDelete.push(storagePath);
+          }
+        }
+      }
+
+      if (pathsToDelete.length > 0) {
+        const { failed } = await removeUnitStorageObjects(supabase, pathsToDelete);
+        if (failed.length > 0) {
+          warning = "Unit diperbarui, namun sebagian file gambar lama gagal dibersihkan dari storage.";
+        }
+      }
+    }
+
     if (existing.slug && unitData.slug && existing.slug !== unitData.slug) {
       const { error: redirectError } = await supabase.from("redirects").upsert(
         {
@@ -292,7 +325,7 @@ export async function updateUnit(id: string, formData: FormData) {
         { onConflict: "old_path" }
       );
       if (redirectError) {
-        warning = "Properti tersimpan, tetapi redirect dari slug lama gagal dibuat.";
+        warning = (warning ? `${warning} ` : "") + "Redirect dari slug lama gagal dibuat.";
       }
     }
 
@@ -318,6 +351,22 @@ export async function deleteUnit(id: string) {
     if (fetchError) return { error: fetchError.message };
     if (!unit) return { error: "Unit tidak ditemukan." };
 
+    // Kumpulkan path gambar milik unit ini sebelum record dinonaktifkan
+    const allImages = [unit.image_url, ...(unit.gallery || [])].filter(Boolean) as string[];
+    const pathsToRemove: string[] = [];
+
+    for (const url of allImages) {
+      const storagePath = extractPropertiStoragePath(url);
+      if (storagePath) {
+        // Pastikan tidak ada unit aktif lain yang berbagi aset ini
+        const isReferenced = await isStorageObjectReferenced(supabase, storagePath, id);
+        if (!isReferenced) {
+          pathsToRemove.push(storagePath);
+        }
+      }
+    }
+
+    // Perbarui record database: tandai soft-delete dan bersihkan referensi agar tidak ada pointer mati
     const { data: deleted, error: dbError } = await supabase
       .from("units")
       .update({
@@ -325,32 +374,151 @@ export async function deleteUnit(id: string) {
         status: "Draft",
         is_featured: false,
         featured_order: null,
+        image_url: null,
+        gallery: [],
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
       .is("deleted_at", null)
       .select("id")
       .maybeSingle();
+
     if (dbError) return { error: dbError.message };
     if (!deleted) return { error: "Unit tidak ditemukan atau tidak dapat dihapus." };
 
-    // Hapus file fisik gambar di Supabase Storage
-    const allImages = [unit.image_url, ...(unit.gallery || [])].filter(Boolean) as string[];
-    const pathsToRemove = allImages
-      .filter((url) => url.includes("/storage/v1/object/public/properti/"))
-      .map((url) => {
-        const parts = url.split("/storage/v1/object/public/properti/");
-        return parts.length > 1 ? parts[1] : null;
-      })
-      .filter(Boolean) as string[];
+    // Bersihkan juga dari tabel relasi unit_images jika ada
+    try {
+      await supabase.from("unit_images").delete().eq("unit_id", id);
+    } catch {
+      // Abaikan jika tabel tidak dipakai
+    }
 
+    // Hapus file fisik gambar di Supabase Storage
+    let warning: string | undefined;
     if (pathsToRemove.length > 0) {
-      await supabase.storage.from("properti").remove(pathsToRemove);
+      const { failed } = await removeUnitStorageObjects(supabase, pathsToRemove);
+      if (failed.length > 0) {
+        warning = "Unit berhasil dihapus, tetapi sebagian file gambar gagal dihapus dari storage.";
+      }
     }
 
     revalidateUnitPaths(unit.slug);
-    return { success: true };
+    return { success: true, warning };
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Gagal menghapus unit." };
+  }
+}
+
+/**
+ * Menghapus satu gambar secara aman dari storage dan database.
+ * Jika unitId diberikan, referensi di database diperbarui terlebih dahulu.
+ * Jika unitId tidak diberikan (gambar draft yang belum disimpan), gambar langsung dihapus dari storage.
+ */
+export async function deleteUnitImage(params: {
+  unitId?: string;
+  imageUrl: string;
+}) {
+  try {
+    const supabase = await verifyAdmin();
+    const storagePath = extractPropertiStoragePath(params.imageUrl);
+
+    if (!storagePath) {
+      return { error: "URL gambar tidak valid atau berada di luar storage unit." };
+    }
+
+    if (params.unitId) {
+      const { data: unit, error: fetchError } = await supabase
+        .from("units")
+        .select("id, slug, image_url, gallery")
+        .eq("id", params.unitId)
+        .is("deleted_at", null)
+        .maybeSingle();
+
+      if (fetchError || !unit) {
+        return { error: "Unit tidak ditemukan." };
+      }
+
+      // Pastikan gambar memang terdaftar pada unit ini
+      const isMain = unit.image_url === params.imageUrl;
+      const inGallery = (unit.gallery || []).includes(params.imageUrl);
+
+      if (!isMain && !inGallery) {
+        return { error: "Gambar tidak terdaftar pada unit ini." };
+      }
+
+      // Perbarui record database terlebih dahulu (database-first consistency)
+      const updatedGallery = (unit.gallery || []).filter((u: string) => u !== params.imageUrl);
+      const updatedMain = isMain ? (updatedGallery[0] || null) : unit.image_url;
+
+      const { error: updateError } = await supabase
+        .from("units")
+        .update({
+          image_url: updatedMain,
+          gallery: updatedGallery,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", params.unitId);
+
+      if (updateError) {
+        return { error: `Gagal memperbarui database: ${updateError.message}` };
+      }
+
+      // Bersihkan dari tabel relasi jika ada
+      try {
+        await supabase
+          .from("unit_images")
+          .delete()
+          .eq("unit_id", params.unitId)
+          .eq("image_url", params.imageUrl);
+      } catch {
+        // ignore
+      }
+
+      // Cek apakah ada unit aktif lain yang menggunakan file ini
+      const isReferenced = await isStorageObjectReferenced(supabase, storagePath, params.unitId);
+      let warning: string | undefined;
+
+      if (!isReferenced) {
+        const { failed } = await removeUnitStorageObjects(supabase, [storagePath]);
+        if (failed.length > 0) {
+          warning = "Referensi database berhasil dihapus, namun file fisik storage gagal dibersihkan.";
+        }
+      }
+
+      revalidateUnitPaths(unit.slug);
+      return { success: true, warning };
+    } else {
+      // Penghapusan gambar draft yang belum disimpan ke DB
+      const isReferenced = await isStorageObjectReferenced(supabase, storagePath);
+      if (isReferenced) {
+        return { error: "Gambar masih digunakan oleh unit aktif lain dan tidak dapat dihapus." };
+      }
+
+      const { failed } = await removeUnitStorageObjects(supabase, [storagePath]);
+      if (failed.length > 0) {
+        return { error: `Gagal menghapus file dari storage: ${failed[0]?.error}` };
+      }
+
+      return { success: true };
+    }
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Gagal menghapus gambar." };
+  }
+}
+
+/**
+ * Server Action untuk audit orphaned storage objects
+ */
+export async function auditUnitStorageAction(options?: {
+  dryRun?: boolean;
+  limit?: number;
+  olderThanMinutes?: number;
+}) {
+  try {
+    const supabase = await verifyAdmin();
+    const result = await auditUnitStorageOrphans(supabase, options);
+    return { success: true, result };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Gagal melakukan audit storage." };
   }
 }

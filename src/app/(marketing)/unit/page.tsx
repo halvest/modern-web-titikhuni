@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { ArrowUpRight, ChevronRight, Search } from "lucide-react";
 import type { CatalogUnit } from "@/components/marketing/units/unit-card";
 import { CatalogFilter } from "@/components/marketing/units/catalog-filter";
 import { CatalogSections } from "@/components/marketing/units/catalog-sections";
@@ -11,9 +11,9 @@ export const revalidate = 1800; // ISR 30 minutes for ultra-fast TTFB
 
 const PAGE_PATH = "/unit";
 const PAGE_URL = `${siteConfig.url}${PAGE_PATH}`;
-const PAGE_TITLE = "Rumah Dijual di Yogyakarta, Sleman & Bantul | Titik Huni";
+const PAGE_TITLE = "Katalog Rumah Yogyakarta | Titik Huni";
 const PAGE_DESCRIPTION =
-  "Cari rumah dijual di Yogyakarta, Sleman, dan Bantul dari Titik Huni. Bandingkan harga mulai, lokasi, spesifikasi, dan status unit, lalu diskusikan jadwal kunjungan.";
+  "Katalog rumah di Yogyakarta dari Titik Huni. Temukan pilihan hunian dengan desain fungsional, spesifikasi lengkap, dan harga transparan di Yogyakarta.";
 const OG_IMAGE = `${siteConfig.url}/assets/images/konsep_titikhuni.webp`;
 
 export const metadata: Metadata = {
@@ -115,7 +115,7 @@ export default async function UnitCatalogPage() {
         "@id": `${PAGE_URL}#breadcrumb`,
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Beranda", item: siteConfig.url },
-          { "@type": "ListItem", position: 2, name: "Rumah di Yogyakarta", item: PAGE_URL },
+          { "@type": "ListItem", position: 2, name: "Katalog", item: PAGE_URL },
         ],
       },
       ...(!error && units.length ? [{
@@ -146,15 +146,7 @@ export default async function UnitCatalogPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
 
-      <div className="home-content-canvas relative min-h-screen">
-        {/* Subtle Architectural Grid Texture Accent */}
-        <div
-          className="pointer-events-none absolute inset-y-0 right-0 hidden w-[42%] opacity-30 lg:block"
-          aria-hidden="true"
-        >
-          <div className="architectural-grid h-full w-full" />
-        </div>
-
+      <div className="home-content-canvas min-h-screen">
         {/* ========================================================
             1. UNIFIED COMPACT ABOVE-THE-FOLD FRAME
             ======================================================== */}
@@ -165,47 +157,53 @@ export default async function UnitCatalogPage() {
         >
           <div className="site-container relative">
             {/* Breadcrumb Navigation */}
-            <nav aria-label="Breadcrumb" className="mb-3.5 text-xs text-foreground-soft sm:mb-4">
-              <ol className="flex items-center gap-2">
+            <nav aria-label="Breadcrumb" className="mb-4 text-xs text-foreground-soft sm:mb-5">
+              <ol className="flex items-center gap-1.5 sm:gap-2">
                 <li>
-                  <Link href="/" className="underline-offset-4 hover:text-primary hover:underline">
+                  <Link
+                    href="/"
+                    className="transition-colors hover:text-primary focus-visible:outline-hidden"
+                  >
                     Beranda
                   </Link>
                 </li>
-                <li aria-hidden="true">/</li>
-                <li aria-current="page" className="text-foreground">
-                  Rumah di Yogyakarta
+                <li aria-hidden="true" className="text-border-strong">
+                  <ChevronRight size={13} className="opacity-60" />
+                </li>
+                <li aria-current="page" className="font-medium text-foreground">
+                  Katalog
                 </li>
               </ol>
             </nav>
 
             {/* Compact Editorial Header (Unified in one frame) */}
-            <div className="flex flex-col justify-between gap-4 border-b border-border/80 pb-6 lg:flex-row lg:items-end md:pb-7">
+            <div className="flex flex-col justify-between gap-4 pb-4 lg:flex-row lg:items-end md:pb-6">
               <div className="max-w-2xl">
-                <p className="site-eyebrow text-primary before:bg-primary">
-                  Katalog Titik Huni · Yogyakarta
-                </p>
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-[var(--sage)]/80 px-3.5 py-1 text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-primary shadow-2xs">
+                  <span className="size-1.5 rounded-full bg-primary" />
+                  <span>Katalog Titik Huni · Yogyakarta</span>
+                </div>
                 <h1
                   id="unit-page-title"
-                  className="mt-2 text-balance text-[clamp(2.15rem,4vw,3.5rem)] font-medium leading-[1.06] tracking-[-0.045em] text-foreground"
+                  className="mt-3 text-balance text-[clamp(2.15rem,4vw,3.5rem)] font-medium leading-[1.06] tracking-[-0.045em] text-foreground"
                 >
                   Rumah dijual di <span className="text-primary">Yogyakarta.</span>
                 </h1>
               </div>
 
-              <div className="flex flex-col gap-2 lg:max-w-md lg:items-end lg:text-right">
+              <div className="flex flex-col gap-2.5 lg:max-w-md lg:items-end lg:text-right">
                 <p className="text-pretty text-sm leading-relaxed text-foreground-muted">
-                  Jelajahi hunian terkurasi Titik Huni di Sleman dan Bantul. Bandingkan lokasi, harga, dan spesifikasi arsitektur ruang.
+                  Jelajahi hunian terkurasi Titik Huni di Yogyakarta. Bandingkan lokasi, harga, dan spesifikasi arsitektur ruang.
                 </p>
                 <a
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   data-catalog-cta="consultation-intro"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary hover:underline"
+                  className="group inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary transition-colors hover:text-primary-hover"
                 >
                   <span>Konsultasi Ketersediaan Unit</span>
-                  <span aria-hidden="true">↗</span>
+                  <ArrowUpRight size={14} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
                 </a>
               </div>
             </div>

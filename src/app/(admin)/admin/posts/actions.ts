@@ -85,6 +85,15 @@ function relationValues(formData: FormData, key: string) {
   return Array.from(new Set(formData.getAll(key).map(String).map((value) => value.trim()).filter(Boolean)));
 }
 
+function normalizeTagSlug(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 async function syncRelations(supabase: SupabaseClient, postId: string, formData: FormData) {
   const tags = relationValues(formData, "tags");
   const unitIds = relationValues(formData, "related_unit_ids");
@@ -99,16 +108,68 @@ async function syncRelations(supabase: SupabaseClient, postId: string, formData:
   if (cleanupError) throw new Error(`Relasi lama gagal diperbarui: ${cleanupError.message}`);
 
   const tagIds: string[] = [];
-  for (const name of tags) {
-    const existing = await supabase.from("tags").select("id").eq("name", name).maybeSingle();
-    if (existing.error) throw new Error(`Tag gagal diperiksa: ${existing.error.message}`);
-    if (existing.data?.id) {
-      tagIds.push(existing.data.id);
-      continue;
+  for (const rawName of tags) {
+    const name = rawName.trim().replace(/\s+/g, " ");
+    if (!name) continue;
+    const slug = normalizeTagSlug(name);
+    if (!slug) continue;
+
+    // 1. Cek tag berdasarkan slug
+    const bySlug = await supabase
+      .from("tags")
+      .select("id")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (bySlug.error) throw new Error(`Tag gagal diperiksa: ${bySlug.error.message}`);
+
+    let tagId = bySlug.data?.id;
+
+    // 2. Jika belum ditemukan, periksa kecocokan nama case-insensitive
+    if (!tagId) {
+      const byName = await supabase
+        .from("tags")
+        .select("id")
+        .ilike("name", name)
+        .maybeSingle();
+
+      if (byName.error) throw new Error(`Tag gagal diperiksa: ${byName.error.message}`);
+      tagId = byName.data?.id;
     }
-    const created = await supabase.from("tags").insert({ name }).select("id").single();
-    if (created.error) throw new Error(`Tag gagal dibuat: ${created.error.message}`);
-    tagIds.push(created.data.id);
+
+    // 3. Jika tag belum ada di database, buat tag baru dengan name dan slug valid
+    if (!tagId) {
+      const created = await supabase
+        .from("tags")
+        .insert({ name, slug })
+        .select("id")
+        .single();
+
+      if (created.error) {
+        if (created.error.code === "23505") {
+          // Penanganan benturan bila tag dibuat bersamaan
+          const fallback = await supabase
+            .from("tags")
+            .select("id")
+            .eq("slug", slug)
+            .maybeSingle();
+
+          if (fallback.data?.id) {
+            tagId = fallback.data.id;
+          } else {
+            throw new Error(`Tag gagal dibuat: ${created.error.message}`);
+          }
+        } else {
+          throw new Error(`Tag gagal dibuat: ${created.error.message}`);
+        }
+      } else {
+        tagId = created.data.id;
+      }
+    }
+
+    if (tagId && !tagIds.includes(tagId)) {
+      tagIds.push(tagId);
+    }
   }
 
   const insertQueries = [];

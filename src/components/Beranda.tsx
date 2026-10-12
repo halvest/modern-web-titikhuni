@@ -88,6 +88,7 @@ export function Beranda() {
                 fill
                 priority={index === 0}
                 loading={index === 0 ? "eager" : "lazy"}
+                quality={80}
                 sizes="100vw"
                 className={`object-cover ${slide.position} motion-safe:transition-transform motion-safe:[transition-duration:9000ms] ${
                   current === index
@@ -105,9 +106,10 @@ export function Beranda() {
       <div className="site-container flex min-h-[100svh] flex-1 flex-col pb-6 pt-[var(--header-height)] sm:pb-7 lg:pb-8">
         <div className="grid flex-1 items-center gap-10 py-8 sm:py-10 lg:grid-cols-12 lg:py-12">
           <div className="max-w-4xl lg:col-span-9">
-            <p className="site-eyebrow text-white/75 before:bg-white">
-              Boutique developer · Yogyakarta
-            </p>
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1 text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-white/90 shadow-2xs backdrop-blur-md">
+              <span className="size-1.5 rounded-full bg-white" />
+              <span>Boutique developer · Yogyakarta</span>
+            </div>
             <h1
               id="home-title"
               className="mt-5 max-w-4xl text-balance text-[clamp(3rem,7vw,6.75rem)] font-medium leading-[0.97] tracking-[-0.055em] text-white sm:mt-6"

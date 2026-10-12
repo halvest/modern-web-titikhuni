@@ -1,52 +1,50 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, MessageCircle, Plus } from "lucide-react";
-import { formatRupiah } from "@/lib/formatRupiah";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Layers3,
+  MapPin,
+  MessageCircle,
+  Plus,
+  ShieldCheck,
+} from "lucide-react";
 import type { CatalogUnit } from "./unit-card";
+import { ScrollReveal } from "@/components/ScrollReveal";
 
 export function CatalogSections({
-  units,
+  units: _units,
   whatsappUrl,
-  dataUnavailable,
+  dataUnavailable: _dataUnavailable,
 }: {
   units: CatalogUnit[];
   whatsappUrl: string;
   dataUnavailable: boolean;
 }) {
-  const available = units.filter((unit) => unit.status === "Tersedia");
-  const prices = available
-    .map((unit) => Number(unit.price))
-    .filter((price) => Number.isFinite(price) && price > 0);
-  const minimumPrice = prices.length ? Math.min(...prices) : null;
-
   const faqs = [
     {
-      question: "Berapa harga mulai rumah Titik Huni di Yogyakarta?",
+      question: "Berapa harga rumah Titik Huni di Yogyakarta?",
       answer:
-        minimumPrice !== null
-          ? `Harga mulai terendah yang tercantum untuk unit berstatus Tersedia di katalog ini adalah ${formatRupiah(
-              minimumPrice
-            )}. Angka tersebut berasal dari katalog Titik Huni, bukan gambaran harga seluruh pasar Yogyakarta. Harga akhir mengikuti pilihan unit dan rincian yang dikonfirmasi tim.`
-          : "Harga unit yang tersedia belum dapat dirangkum dari katalog saat ini. Hubungi tim Titik Huni untuk meminta harga unit yang Anda minati.",
+        "Harga rumah Titik Huni mulai dari Rp500 jutaan, tergantung lokasi, luas tanah, bangunan, dan spesifikasi masing-masing unit.",
     },
     {
-      question: "Bagaimana mencari rumah di Sleman atau Bantul?",
+      question: "Di mana lokasi perumahan Titik Huni?",
       answer:
-        "Gunakan filter wilayah di atas untuk memilah pilihan di Sleman maupun Bantul. Setiap kartu menampilkan detail kecamatan dan kelurahan; buka halaman detail rumah untuk memastikan aksesibilitas dan lingkungan sekitar.",
+        "Hunian Titik Huni dikembangkan di wilayah Yogyakarta. Detail lokasi dan pilihan unit dapat dilihat pada katalog hunian.",
     },
     {
-      question: "Apa arti KT, KM, LT, LB, dan Carport pada kartu?",
+      question: "Apakah rumah tersedia siap huni atau inden?",
       answer:
-        "KT adalah jumlah kamar tidur, KM kamar mandi, LT luas tanah, dan LB luas bangunan dalam meter persegi. Angka carport menunjukkan kapasitas parkir kendaraan. Pada status Coming Soon, spesifikasi detail akan dirilis bertahap.",
+        "Kami menyediakan pilihan rumah siap huni dan inden sesuai ketersediaan proyek. Status setiap unit dapat dikonfirmasi melalui tim Titik Huni.",
     },
     {
-      question: "Apakah semua rumah di halaman ini masih tersedia?",
+      question: "Bagaimana legalitas rumah Titik Huni?",
       answer:
-        "Perhatikan label status di setiap kartu. Tersedia berarti unit aktif dan siap dikonfirmasi jadwal kunjungannya. Dipesan dan Terjual menandai status transaksi terkini. Coming Soon menandai proyek mendatang yang sedang dalam proses persiapan.",
+        "Informasi legalitas, termasuk status SHM dan PBG, dapat diperiksa berdasarkan dokumen dan tahapan masing-masing proyek sebelum pembelian.",
     },
     {
-      question: "Bagaimana menjadwalkan kunjungan dan menanyakan pembayaran?",
+      question: "Bagaimana cara survei lokasi dan melakukan pembelian?",
       answer:
-        "Hubungi tim Titik Huni melalui WhatsApp, sebutkan nama rumah atau wilayah yang diminati. Tim kami akan mengonfirmasi ketersediaan terkini, skema pembayaran, serta mendampingi survei lokasi secara privat.",
+        "Hubungi tim Titik Huni melalui WhatsApp untuk menanyakan ketersediaan unit, menjadwalkan survei, serta mendapatkan informasi harga dan skema pembayaran.",
     },
   ];
 
@@ -58,78 +56,83 @@ export function CatalogSections({
       <section
         id="panduan"
         aria-labelledby="comparison-title"
-        className="scroll-mt-[var(--header-height)] border-t border-border/80 py-12 md:py-16 lg:py-20"
+        className="scroll-mt-24 py-10 sm:py-12 md:py-16"
       >
         <div className="site-container">
-          <div className="max-w-2xl">
-            <p className="site-eyebrow text-primary before:bg-primary">
-              Panduan Memilih
-            </p>
-            <h2
-              id="comparison-title"
-              className="mt-3 text-balance text-[clamp(1.85rem,3.2vw,2.75rem)] font-medium leading-[1.1] tracking-[-0.04em] text-foreground"
-            >
-              Bandingkan rumah dengan{" "}
-              <span className="text-primary">informasi yang relevan.</span>
-            </h2>
-          </div>
-
-          <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-10 md:mt-10">
-            {[
-              {
-                number: "01",
-                title: "Sesuaikan kebutuhan ruang",
-                body: "Perhatikan perbandingan luas tanah, luas bangunan, jumlah kamar, dan orientasi cahaya. Luas yang sama dapat menghadirkan pengalaman hidup yang sangat berbeda tergantung perancangan tata ruangnya.",
-              },
-              {
-                number: "02",
-                title: "Pahami struktur harga mulai",
-                body: "Gunakan harga awal pada kartu sebagai acuan. Diskusikan rincian spesifikasi, kelengkapan material, dan tahapan pembayaran secara transparan bersama tim kami sebelum mengambil keputusan.",
-              },
-              {
-                number: "03",
-                title: "Rasakan suasana lokasi langsung",
-                body: "Jadwalkan survei ke lokasi untuk merasakan ketenangan lingkungan, aksesibilitas harian, sirkulasi angin alami, dan kualitas pengerjaan konstruksi arsitektural di lapangan.",
-              },
-            ].map(({ number, title, body }) => (
-              <div
-                key={number}
-                className="border-t border-border/80 pt-5 flex flex-col"
-              >
-                <span className="font-mono text-xl font-light text-primary/40 sm:text-2xl mb-2">
-                  {number}
-                </span>
-                <h3 className="text-lg font-medium tracking-tight text-foreground">
-                  {title}
-                </h3>
-                <p className="mt-2.5 text-[0.875rem] leading-[1.7] text-foreground-muted">
-                  {body}
-                </p>
+          <ScrollReveal>
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-[var(--sage)]/80 px-3.5 py-1 text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-primary shadow-2xs">
+                <span className="size-1.5 rounded-full bg-primary" />
+                <span>Panduan Memilih</span>
               </div>
-            ))}
-          </div>
-
-          <div className="mt-10 flex flex-col gap-4 border-t border-border/80 pt-6 sm:flex-row sm:items-center sm:justify-between">
-            <p className="max-w-lg text-sm leading-6 text-foreground-muted">
-              Pelajari filosofi desain dan rekam jejak pembangunan Titik Huni di Yogyakarta.
-            </p>
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-medium">
-              <Link
-                href="/tentang-kami"
-                className="site-link-editorial group inline-flex items-center gap-1.5"
+              <h2
+                id="comparison-title"
+                className="mt-2.5 text-balance text-2xl font-medium tracking-tight text-foreground sm:text-3xl md:text-[2.25rem] md:leading-[1.12]"
               >
-                <span>Tentang Titik Huni</span>
-                <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" aria-hidden="true" />
-              </Link>
-              <Link
-                href="/proyek"
-                className="site-link-editorial group inline-flex items-center gap-1.5"
-              >
-                <span>Lihat Proyek Selesai</span>
-                <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" aria-hidden="true" />
-              </Link>
+                Temukan rumah yang{" "}
+                <span className="text-primary">sesuai kebutuhan Anda.</span>
+              </h2>
             </div>
-          </div>
+
+            <div className="mt-7 grid grid-cols-1 items-stretch gap-5 sm:mt-8 md:grid-cols-3 md:gap-6">
+              {[
+                {
+                  icon: Layers3,
+                  title: "Sesuaikan Kebutuhan Ruang",
+                  body: "Perhatikan luas tanah, bangunan, jumlah kamar, dan tata ruang yang mendukung aktivitas sehari-hari.",
+                },
+                {
+                  icon: ShieldCheck,
+                  title: "Pahami Harga & Spesifikasi",
+                  body: "Bandingkan harga, spesifikasi bangunan, legalitas, dan skema pembayaran sebelum memutuskan.",
+                },
+                {
+                  icon: MapPin,
+                  title: "Kunjungi Lokasi",
+                  body: "Lihat langsung lingkungan, akses, kenyamanan ruang, dan kualitas bangunan.",
+                },
+              ].map(({ icon: Icon, title, body }) => (
+                <div
+                  key={title}
+                  className="group relative flex h-full flex-col justify-start rounded-2xl border border-[#D5E2D7] bg-[#F4F7F4] p-5 sm:p-6 shadow-2xs transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:bg-white hover:shadow-sm"
+                >
+                  <div className="flex size-11 items-center justify-center rounded-xl bg-white text-primary shadow-2xs transition-all duration-300 group-hover:bg-primary group-hover:text-white">
+                    <Icon size={19} aria-hidden="true" />
+                  </div>
+
+                  <h3 className="mt-4 text-base font-medium tracking-tight text-foreground sm:text-[17px]">
+                    {title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-foreground-muted">
+                    {body}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 flex flex-col gap-4 border-t border-[#D5E2D7] pt-5 sm:flex-row sm:items-center sm:justify-between">
+              <p className="max-w-lg text-sm leading-6 text-foreground-muted">
+                Kenali pendekatan desain dan proyek yang telah dikembangkan Titik Huni.
+              </p>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium">
+                <Link
+                  href="/tentang-kami"
+                  className="site-link-editorial group inline-flex items-center gap-1.5"
+                >
+                  <span>Tentang Titik Huni</span>
+                  <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                </Link>
+                <span className="hidden text-border sm:inline" aria-hidden="true">|</span>
+                <Link
+                  href="/proyek"
+                  className="site-link-editorial group inline-flex items-center gap-1.5"
+                >
+                  <span>Lihat Proyek Selesai</span>
+                  <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                </Link>
+              </div>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -139,91 +142,111 @@ export function CatalogSections({
       <section
         id="tanya-jawab"
         aria-labelledby="catalog-faq-title"
-        className="scroll-mt-[var(--header-height)] border-t border-border/80 py-12 md:py-16 lg:py-20"
+        className="scroll-mt-24 py-10 sm:py-12 md:py-16"
       >
-        <div className="site-container grid gap-8 lg:grid-cols-12 lg:gap-14 xl:gap-16">
-          <div className="lg:col-span-4">
-            <p className="site-eyebrow text-primary before:bg-primary">
-              Informasi Katalog
-            </p>
-            <h2
-              id="catalog-faq-title"
-              className="mt-3 text-balance text-[clamp(1.75rem,2.8vw,2.5rem)] font-medium leading-[1.12] tracking-[-0.04em] text-foreground"
-            >
-              Pertanyaan tentang <span className="text-primary">katalog rumah.</span>
-            </h2>
-            <p className="mt-4 text-sm leading-relaxed text-foreground-muted">
-              Jawaban ringkas untuk mempermudah eksplorasi pilihan hunian dan persiapan konsultasi Anda.
-            </p>
-          </div>
-
-          <div className="border-t border-border/80 lg:col-span-8">
-            {faqs.map(({ question, answer }) => (
-              <details
-                key={question}
-                className="group border-b border-border/80 transition-colors"
-              >
-                <summary className="flex min-h-[60px] cursor-pointer list-none items-center justify-between gap-5 py-4 text-[15px] font-medium leading-snug text-foreground focus-visible:outline-2 focus-visible:outline-primary sm:text-base [&::-webkit-details-marker]:hidden">
-                  <span>{question}</span>
-                  <Plus
-                    size={17}
-                    className="shrink-0 text-primary transition-transform duration-300 group-open:rotate-45"
-                    aria-hidden="true"
-                  />
-                </summary>
-                <p className="max-w-2xl pb-5 pr-6 text-sm leading-[1.75] text-foreground-muted">
-                  {answer}
+        <div className="site-container">
+          <ScrollReveal>
+            <div className="grid gap-8 lg:grid-cols-12 lg:gap-14 xl:gap-16">
+              <div className="lg:col-span-4">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-[var(--sage)]/80 px-3.5 py-1 text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-primary shadow-2xs">
+                  <span className="size-1.5 rounded-full bg-primary" />
+                  <span>Informasi Katalog</span>
+                </div>
+                <h2
+                  id="catalog-faq-title"
+                  className="mt-2.5 text-balance text-2xl font-medium tracking-tight text-foreground sm:text-3xl md:text-[2.25rem] md:leading-[1.12]"
+                >
+                  Pertanyaan Seputar <span className="text-primary">Hunian</span>
+                </h2>
+                <p className="mt-2 text-pretty text-sm leading-relaxed text-foreground-muted sm:text-base">
+                  Informasi singkat untuk membantu Anda memilih hunian yang sesuai kebutuhan.
                 </p>
-              </details>
-            ))}
-          </div>
+              </div>
+
+              <div className="border-t border-[#D5E2D7] lg:col-span-8">
+                {faqs.map(({ question, answer }, index) => (
+                  <details
+                    key={question}
+                    className="group border-b border-[#D5E2D7] transition-colors"
+                  >
+                    <summary className="flex min-h-[58px] cursor-pointer list-none items-center justify-between gap-5 py-4 text-[15px] font-medium leading-snug text-foreground transition-colors group-hover:text-primary focus-visible:outline-2 focus-visible:outline-primary sm:text-base [&::-webkit-details-marker]:hidden">
+                      <span>
+                        <span className="font-sans font-bold tabular-nums text-primary mr-2.5">
+                          {index + 1}.
+                        </span>
+                        {question}
+                      </span>
+                      <Plus
+                        size={17}
+                        className="shrink-0 text-primary transition-transform duration-300 group-open:rotate-45"
+                        aria-hidden="true"
+                      />
+                    </summary>
+                    <p className="max-w-2xl pb-5 pr-6 text-sm leading-[1.75] text-foreground-muted">
+                      {answer}
+                    </p>
+                  </details>
+                ))}
+              </div>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
       {/* ========================================================
-          3. FINAL CTA — HOMECONTACT DESIGN SYSTEM
+          3. KONSULTASI & KUNJUNGAN (FINAL CTA)
           ======================================================== */}
       <section
+        id="konsultasi"
         aria-labelledby="catalog-contact-title"
-        className="relative py-12 md:py-16 lg:py-20"
+        className="scroll-mt-24 pt-6 pb-14 sm:pt-8 sm:pb-18 md:pt-10 md:pb-22"
       >
         <div className="site-container">
-          <div className="grid items-center gap-6 rounded-[1.75rem] bg-primary p-7 sm:p-9 md:p-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-12 lg:p-14 text-white shadow-[0_20px_50px_-25px_rgba(35,68,56,0.22)]">
-            <div>
-              <p className="site-eyebrow text-white/70 before:bg-white/70">
-                Konsultasi &amp; Kunjungan
-              </p>
+          <ScrollReveal>
+            <div className="relative overflow-hidden rounded-3xl sm:rounded-[2rem] border border-[#CFDDD1] bg-[#F1F6F2] p-7 sm:p-10 md:p-12 lg:p-14 shadow-xs">
+              <div className="grid gap-8 lg:grid-cols-12 lg:items-center lg:gap-12">
+                <div className="lg:col-span-7">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-[var(--sage)]/80 px-3.5 py-1 text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-primary shadow-2xs">
+                    <span className="size-1.5 rounded-full bg-primary" />
+                    <span>Konsultasi &amp; Kunjungan</span>
+                  </div>
 
-              <h2
-                id="catalog-contact-title"
-                className="mt-3.5 text-balance text-[clamp(2rem,3.6vw,3.25rem)] font-medium leading-[1.06] tracking-[-0.04em] text-white"
-              >
-                Sudah menemukan rumah yang ingin Anda lihat?
-              </h2>
+                  <h2
+                    id="catalog-contact-title"
+                    className="mt-2.5 text-balance text-2xl font-medium tracking-tight text-foreground sm:text-3xl md:text-[2.25rem] md:leading-[1.15]"
+                  >
+                    Temukan rumah yang tepat untuk Anda.
+                  </h2>
 
-              <p className="mt-3.5 max-w-lg text-pretty text-sm leading-6 text-white/80 sm:text-base sm:leading-7">
-                Sampaikan nama unit, kebutuhan tata ruang, dan kisaran anggaran Anda. Tim Titik Huni akan mengonfirmasi ketersediaan serta mendampingi jadwal kunjungan lokasi.
-              </p>
+                  <p className="mt-3 text-pretty text-sm leading-relaxed text-foreground-muted sm:text-base sm:leading-7">
+                    Tertarik dengan salah satu hunian Titik Huni? Hubungi tim kami untuk informasi ketersediaan unit, harga, dan jadwal kunjungan lokasi.
+                  </p>
+                </div>
+
+                <div className="flex flex-col items-start gap-3.5 sm:items-stretch lg:col-span-5 lg:items-end">
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-catalog-cta="consultation-bottom"
+                    className="site-button-primary group/cta w-full justify-center py-3.5 text-[15px] font-medium shadow-xs hover:shadow-md transition-all sm:w-auto"
+                  >
+                    <MessageCircle size={17} aria-hidden="true" />
+                    <span>Konsultasi &amp; Jadwalkan Kunjungan</span>
+                    <ArrowUpRight
+                      size={16}
+                      aria-hidden="true"
+                      className="transition-transform group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5"
+                    />
+                  </a>
+
+                  <p className="text-xs text-foreground-muted sm:text-center lg:text-right">
+                    Konsultasikan pilihan hunian Anda bersama tim Titik Huni.
+                  </p>
+                </div>
+              </div>
             </div>
-
-            <div className="flex flex-col items-start gap-4 lg:items-end">
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                data-catalog-cta="consultation-bottom"
-                className="inline-flex min-h-[46px] items-center justify-center gap-2.5 rounded-[11px] bg-white px-6 py-3 text-[14px] font-medium text-primary transition-all duration-300 hover:bg-[#FAFCF9] active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white w-full sm:w-auto"
-              >
-                <MessageCircle size={16} aria-hidden="true" />
-                <span>Diskusikan Pilihan Rumah</span>
-                <ArrowUpRight size={16} aria-hidden="true" />
-              </a>
-
-              <p className="text-xs text-white/60">
-                Konsultasi langsung dengan tim pengembangan Titik Huni.
-              </p>
-            </div>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
     </>

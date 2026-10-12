@@ -20,6 +20,7 @@ export function HomeServices() {
                 src="/assets/images/rumah-bangunjiwo-2.jpg"
                 alt="Layanan arsitek dan kontraktor bangun rumah Titik Huni di Yogyakarta"
                 fill
+                quality={75}
                 sizes="(max-width: 1023px) 100vw, 42vw"
                 className="object-cover object-center transition-transform duration-1000 ease-out motion-safe:group-hover:scale-[1.035]"
               />
@@ -40,9 +41,10 @@ export function HomeServices() {
 
           <ScrollReveal className="lg:col-span-7">
             <article>
-              <p className="site-eyebrow text-primary before:bg-primary">
-                Arsitek &amp; Kontraktor
-              </p>
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-[var(--sage)]/80 px-3.5 py-1 text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-primary shadow-2xs">
+                <span className="size-1.5 rounded-full bg-primary" />
+                <span>Arsitek &amp; Kontraktor</span>
+              </div>
 
               <h2
                 id="services-title"
@@ -62,7 +64,7 @@ export function HomeServices() {
                 {serviceHighlights.map(({ icon: Icon, label }) => (
                   <li
                     key={label}
-                    className="group flex items-center gap-3 rounded-2xl border border-border bg-white/70 px-3.5 py-3 transition-colors duration-300 hover:border-primary/30 hover:bg-white sm:flex-col sm:items-start sm:gap-3 sm:p-4"
+                    className="group flex items-center gap-3 rounded-2xl border border-[#D5E2D7] bg-[#F4F7F4] p-3.5 shadow-2xs transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-white hover:shadow-xs sm:flex-col sm:items-start sm:gap-3 sm:p-4"
                   >
                     <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[var(--sage)] text-primary transition-colors duration-300 group-hover:bg-primary group-hover:text-white">
                       <Icon size={17} strokeWidth={1.75} aria-hidden="true" />

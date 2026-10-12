@@ -5,6 +5,7 @@ import { Upload, Image as ImageIcon, Plus, X } from "lucide-react";
 import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "react-hot-toast";
+import { compressImage } from "@/lib/images/compress-image";
 
 interface GeneralSectionProps {
   data: PostFormData;
@@ -35,18 +36,22 @@ export function GeneralSection({
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!["image/jpeg", "image/png", "image/webp", "image/avif"].includes(file.type) || file.size > 2 * 1024 * 1024) {
-      toast.error("Gunakan JPG, PNG, WebP, atau AVIF maksimal 2 MB.");
+    if (!["image/jpeg", "image/png", "image/webp", "image/avif"].includes(file.type) || file.size > 15 * 1024 * 1024) {
+      toast.error("Gunakan JPG, PNG, WebP, atau AVIF maksimal 15 MB.");
       e.target.value = "";
       return;
     }
     
     setIsUploading(true);
-    const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-]/g, "")}`;
-    const toastId = toast.loading("Mengunggah gambar...");
+    const toastId = toast.loading("Mengompresi dan mengunggah gambar...");
     
     try {
-      const { error } = await supabase.storage.from("blog").upload(fileName, file);
+      const fileToUpload = await compressImage(file);
+      const fileName = `${Date.now()}-${fileToUpload.name.replace(/[^a-zA-Z0-9.\-]/g, "")}`;
+      const { error } = await supabase.storage.from("blog").upload(fileName, fileToUpload, {
+        cacheControl: "31536000",
+        upsert: false,
+      });
       if (error) throw error;
       
       const { data: { publicUrl } } = supabase.storage.from("blog").getPublicUrl(fileName);
@@ -152,6 +157,7 @@ export function GeneralSection({
                   fill
                   sizes="(max-width: 768px) 100vw, 900px"
                   className="object-cover"
+                  unoptimized
                 />
                 <div className="absolute bottom-3 right-3">
                   <label className="flex min-h-10 cursor-pointer items-center gap-2 rounded-lg bg-white/90 backdrop-blur-sm px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition-colors hover:bg-white">

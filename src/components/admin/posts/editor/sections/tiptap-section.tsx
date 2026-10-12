@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "react-hot-toast";
+import { compressImage } from "@/lib/images/compress-image";
 
 const supabase = createClient();
 
@@ -54,18 +55,22 @@ export function TipTapSection({ data, onChange }: TipTapSectionProps) {
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !editor) return;
-    if (!["image/jpeg", "image/png", "image/webp", "image/avif"].includes(file.type) || file.size > 5 * 1024 * 1024) {
-      toast.error("Gunakan JPG, PNG, WebP, atau AVIF maksimal 5 MB.");
+    if (!["image/jpeg", "image/png", "image/webp", "image/avif"].includes(file.type) || file.size > 15 * 1024 * 1024) {
+      toast.error("Gunakan JPG, PNG, WebP, atau AVIF maksimal 15 MB.");
       e.target.value = "";
       return;
     }
 
     setIsUploading(true);
-    const fileName = `content-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-]/g, "")}`;
-    const toastId = toast.loading("Menyisipkan gambar...");
+    const toastId = toast.loading("Mengompresi dan menyisipkan gambar...");
 
     try {
-      const { error } = await supabase.storage.from("blog").upload(fileName, file);
+      const fileToUpload = await compressImage(file);
+      const fileName = `content-${Date.now()}-${fileToUpload.name.replace(/[^a-zA-Z0-9.\-]/g, "")}`;
+      const { error } = await supabase.storage.from("blog").upload(fileName, fileToUpload, {
+        cacheControl: "31536000",
+        upsert: false,
+      });
       if (error) throw error;
 
       const { data: { publicUrl } } = supabase.storage.from("blog").getPublicUrl(fileName);

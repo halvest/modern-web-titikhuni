@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Images, MapPin } from "lucide-react";
 import type { Project } from "@/lib/projects";
+import { isSupabaseStorageUrl } from "@/lib/images/is-supabase-image";
 
 export function ProjectCard({
   project,
@@ -26,6 +27,7 @@ export function ProjectCard({
             fill
             preload={priority}
             loading={priority ? undefined : "lazy"}
+            unoptimized={isSupabaseStorageUrl(project.cover_image)}
             sizes="(max-width: 639px) 100vw, (max-width: 1279px) 50vw, 33vw"
             className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.025]"
           />

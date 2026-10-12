@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, MapPin } from "lucide-react";
 import type { Project } from "@/lib/projects";
+import { isSupabaseStorageUrl } from "@/lib/images/is-supabase-image";
 
 export function FeaturedProjectCard({
   project,
@@ -24,7 +25,9 @@ export function FeaturedProjectCard({
             src={project.cover_image}
             alt={`Foto ${project.title} di ${project.location}`}
             fill
+            quality={75}
             loading={eager ? "eager" : "lazy"}
+            unoptimized={isSupabaseStorageUrl(project.cover_image)}
             sizes={
               wide
                 ? "(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 50vw"
