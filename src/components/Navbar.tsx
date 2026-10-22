@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowUpRight, Menu, MessageCircle, X } from "lucide-react";
 import { siteConfig } from "@/config/site";
+import { trackWhatsAppClick } from "@/lib/tracking/gtm";
 
 const links = [
   { name: "Beranda", href: "/" },
@@ -139,6 +140,8 @@ export function Navbar() {
               href={whatsapp}
               target="_blank"
               rel="noopener noreferrer"
+              data-cta-location="navbar_header_desktop"
+              onClick={() => trackWhatsAppClick("navbar_header_desktop", "Konsultasi", whatsapp)}
               className="hidden sm:inline-flex site-button-primary"
             >
               <MessageCircle size={16} strokeWidth={1.8} aria-hidden="true" />
@@ -212,7 +215,11 @@ export function Navbar() {
                     href={whatsapp}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={() => setMenuOpen(false)}
+                    data-cta-location="navbar_header_mobile"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      trackWhatsAppClick("navbar_header_mobile", "Mulai konsultasi", whatsapp);
+                    }}
                     className="site-button-primary w-full justify-center py-3 text-[14px]"
                   >
                     <MessageCircle size={16} aria-hidden="true" />

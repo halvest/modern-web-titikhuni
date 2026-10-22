@@ -400,6 +400,7 @@ export function TentangKami() {
                     href={whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    data-cta-location="about_bottom_cta"
                     className="site-button-primary group/cta w-full justify-center py-3.5 text-[15px] font-medium shadow-xs hover:shadow-md transition-all"
                   >
                     <MessageCircle size={18} aria-hidden="true" />

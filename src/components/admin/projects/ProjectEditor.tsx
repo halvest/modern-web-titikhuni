@@ -134,6 +134,7 @@ export function ProjectEditor({
           const { error } = await supabase.storage
             .from("projects")
             .upload(path, fileToUpload, {
+              contentType: fileToUpload.type,
               cacheControl: "31536000",
               upsert: false,
             });

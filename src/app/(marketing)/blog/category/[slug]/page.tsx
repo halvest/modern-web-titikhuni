@@ -311,6 +311,7 @@ export default async function BlogCategoryPage({ params }: Props) {
                         href={whatsappUrl}
                         target="_blank"
                         rel="noopener noreferrer"
+                        data-cta-location="blog_category_bottom_cta"
                         className="site-button-primary group/cta w-full justify-center py-3.5 text-[15px] font-medium shadow-xs hover:shadow-md transition-all sm:w-auto"
                       >
                         <MessageCircle size={17} aria-hidden="true" />

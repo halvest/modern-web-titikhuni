@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { MessageCircle } from "lucide-react";
+import { trackWhatsAppClick } from "@/lib/tracking/gtm";
 
 export function MobileStickyCta({ price, whatsappUrl }: { price: string; whatsappUrl: string }) {
   const [footerVisible, setFooterVisible] = useState(false);
@@ -23,7 +24,14 @@ export function MobileStickyCta({ price, whatsappUrl }: { price: string; whatsap
           <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground-soft">Harga</p>
           <p className="truncate text-base font-semibold text-foreground">{price}</p>
         </div>
-        <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-white hover:bg-primary-hover">
+        <a
+          href={whatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-cta-location="unit_detail_sticky_bar"
+          onClick={() => trackWhatsAppClick("unit_detail_sticky_bar", "WhatsApp", whatsappUrl)}
+          className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-white hover:bg-primary-hover"
+        >
           <MessageCircle size={17} aria-hidden="true" /> WhatsApp
         </a>
       </div>

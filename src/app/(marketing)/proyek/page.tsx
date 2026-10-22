@@ -124,7 +124,13 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
                 <p className="text-pretty text-sm leading-6 text-foreground-muted sm:text-base sm:leading-7">
                   Jelajahi hasil karya rancang bangun Titik Huni di Yogyakarta, dari tahap desain hingga serah terima bangunan.
                 </p>
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary hover:underline">
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-cta-location="proyek_index_header"
+                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary hover:underline"
+                >
                   Diskusikan proyek Anda <ArrowUpRight size={14} aria-hidden="true" />
                 </a>
               </div>

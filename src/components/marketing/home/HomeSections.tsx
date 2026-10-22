@@ -148,13 +148,13 @@ export async function HomeGallery() {
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-[var(--sage)]/80 px-3.5 py-1 text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-primary shadow-2xs">
                 <span className="size-1.5 rounded-full bg-primary" />
-                <span>Proyek Titik Huni</span>
+                <span>Portofolio</span>
               </div>
               <h2
                 id="gallery-title"
                 className="mt-3 text-balance text-[clamp(1.875rem,3.2vw,3rem)] font-medium leading-[1.06] tracking-[-0.04em] text-foreground"
               >
-                Project <span className="text-primary">Finished</span>
+                Karya <span className="text-primary">Titik Huni Studio</span>
               </h2>
             </div>
 

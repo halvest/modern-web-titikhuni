@@ -62,6 +62,7 @@ export function RegionPage({ regionSlug, units: rawUnits, error }: RegionPagePro
               href={`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`}
               target="_blank"
               rel="noopener noreferrer"
+              data-cta-location="region_catalog_intro"
               className="site-button-primary mt-6"
             >
               Konsultasi pencarian
@@ -128,6 +129,7 @@ export function RegionPage({ regionSlug, units: rawUnits, error }: RegionPagePro
                   href={`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`}
                   target="_blank"
                   rel="noopener noreferrer"
+                  data-cta-location="region_catalog_empty_state"
                   className="site-button-primary"
                 >
                   Konsultasi WhatsApp

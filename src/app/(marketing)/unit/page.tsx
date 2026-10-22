@@ -200,6 +200,7 @@ export default async function UnitCatalogPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   data-catalog-cta="consultation-intro"
+                  data-cta-location="unit_catalog_intro"
                   className="group inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary transition-colors hover:text-primary-hover"
                 >
                   <span>Konsultasi Ketersediaan Unit</span>
@@ -239,6 +240,7 @@ export default async function UnitCatalogPage() {
                     href={whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    data-cta-location="unit_catalog_empty_state"
                     className="site-button-primary mt-6"
                   >
                     Hubungi WhatsApp

@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -18,6 +21,7 @@ import { formatUnitPrice, getUnitLocationLabel, getUnitLocationParts } from "@/l
 import { ExpandableDescription } from "./ExpandableDescription";
 import { MobileStickyCta } from "./MobileStickyCta";
 import { UnitGallery } from "./UnitGallery";
+import { trackUnitDetail, trackWhatsAppClick } from "@/lib/tracking/gtm";
 
 export type SellingPoint = { text: string; symbol?: string };
 
@@ -63,6 +67,20 @@ const statusLabel: Record<string, string> = {
 };
 
 export default function UnitDetailClient({ unit }: { unit: UnitDetail }) {
+  const hasTrackedViewRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (unit.slug && hasTrackedViewRef.current !== unit.slug) {
+      hasTrackedViewRef.current = unit.slug;
+      trackUnitDetail({
+        title: unit.title,
+        slug: unit.slug,
+        price: unit.price,
+        status: unit.status,
+      });
+    }
+  }, [unit.slug, unit.title, unit.price, unit.status]);
+
   const gallery = Array.from(new Set([unit.image_url, ...(unit.gallery || [])].filter(Boolean))) as string[];
   const regionSlug = unit.categories?.slug as RegionSlug | undefined;
   const region = regionSlug && PROPERTY_REGIONS[regionSlug] ? PROPERTY_REGIONS[regionSlug] : null;
@@ -227,8 +245,26 @@ export default function UnitDetailClient({ unit }: { unit: UnitDetail }) {
                   <div className="mt-4 flex items-center justify-between border-y border-border py-3 text-sm"><span className="text-foreground-soft">Status unit</span><span className="font-semibold text-primary">{statusLabel[unit.status || ""] || unit.status || "Tersedia"}</span></div>
                   <p className="mt-4 text-sm leading-6 text-foreground-muted">Tanyakan ketersediaan, skema pembayaran, dan jadwal kunjungan langsung kepada tim kami.</p>
                   <div className="mt-5 space-y-2.5">
-                    <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-hover"><MessageCircle size={17} /> Hubungi via WhatsApp</a>
-                    <a href={surveyUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border border-border-strong px-4 text-sm font-semibold text-foreground hover:bg-surface"><CalendarDays size={17} /> Jadwalkan Survey</a>
+                    <a
+                      href={whatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-cta-location="unit_detail_sidebar"
+                      onClick={() => trackWhatsAppClick("unit_detail_sidebar", "Hubungi via WhatsApp", whatsappUrl)}
+                      className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-hover"
+                    >
+                      <MessageCircle size={17} /> Hubungi via WhatsApp
+                    </a>
+                    <a
+                      href={surveyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-cta-location="unit_detail_survey"
+                      onClick={() => trackWhatsAppClick("unit_detail_survey", "Jadwalkan Survey", surveyUrl)}
+                      className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border border-border-strong px-4 text-sm font-semibold text-foreground hover:bg-surface"
+                    >
+                      <CalendarDays size={17} /> Jadwalkan Survey
+                    </a>
                   </div>
                   <p className="mt-4 text-xs leading-5 text-foreground-soft">Harga, spesifikasi, dan ketersediaan dapat berubah. Konfirmasikan kembali bersama tim Titik Huni.</p>
                 </div>

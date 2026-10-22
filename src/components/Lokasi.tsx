@@ -213,6 +213,8 @@ export const Lokasi = () => {
                           <a
                             href={`https://wa.me/6289509888404?text=Halo Titik Huni, lokasi ${loc.name} presisinya dimana ya?`}
                             target="_blank"
+                            rel="noopener noreferrer"
+                            data-cta-location="map_popup_location"
                             className="bg-foreground text-white px-3 py-2 text-[9px] font-bold uppercase block tracking-widest transition-colors hover:bg-black mt-2"
                           >
                             Dapatkan Lokasi

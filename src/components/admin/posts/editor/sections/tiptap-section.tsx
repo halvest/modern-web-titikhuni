@@ -68,6 +68,7 @@ export function TipTapSection({ data, onChange }: TipTapSectionProps) {
       const fileToUpload = await compressImage(file);
       const fileName = `content-${Date.now()}-${fileToUpload.name.replace(/[^a-zA-Z0-9.\-]/g, "")}`;
       const { error } = await supabase.storage.from("blog").upload(fileName, fileToUpload, {
+        contentType: fileToUpload.type,
         cacheControl: "31536000",
         upsert: false,
       });

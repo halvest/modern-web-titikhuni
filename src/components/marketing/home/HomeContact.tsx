@@ -41,6 +41,7 @@ export function HomeContact() {
                   target="_blank"
                   rel="noopener noreferrer"
                   data-wa-source="homepage_final_cta"
+                  data-cta-location="homepage_final_cta"
                   className="site-button-primary group/cta w-full justify-center py-3.5 text-[15px] font-medium shadow-xs hover:shadow-md transition-all sm:w-auto"
                 >
                   <MessageCircle size={17} aria-hidden="true" />

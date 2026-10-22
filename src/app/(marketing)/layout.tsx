@@ -1,22 +1,17 @@
-import Script from "next/script";
 import { siteConfig } from "@/config/site";
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
+import { GTMProvider } from "@/components/tracking/GTMProvider";
 
 export default function MarketingLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const PIXEL_ID = "750363290827556";
-  const GTM_ID = "GTM-WT79LLNQ";
   const SITE_URL = siteConfig.url;
 
   return (
-    <>
-      {/* PENDING CONSENT BANNER:
-          GOOOGLE TAG MANAGER, META PIXEL, DAN CLARITY SCRIPT SEMENTARA DINONAKTIFKAN
-          SAMPAI ADA MEKANISME PERSETUJUAN (CONSENT) PENGGUNA. */}
+    <GTMProvider>
 
       {/* STRUCTURED DATA (Organization, RealEstateAgent, WebSite & Service) */}
       <script
@@ -80,6 +75,6 @@ export default function MarketingLayout({
       <Navbar />
       {children}
       <Footer />
-    </>
+    </GTMProvider>
   );
 }

@@ -448,6 +448,7 @@ export default async function BlogDetailPage({
                         href={whatsappUrl}
                         target="_blank"
                         rel="noopener noreferrer"
+                        data-cta-location="blog_post_inline_cta"
                         className="site-button-primary group/cta justify-center"
                       >
                         <MessageCircle size={15} aria-hidden="true" />

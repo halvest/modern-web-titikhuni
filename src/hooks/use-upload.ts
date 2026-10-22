@@ -23,7 +23,11 @@ export const useUpload = () => {
     // 2. Upload ke bucket 'properti' (di dalam folder 'units/')
     const { data, error } = await supabase.storage
       .from("properti")
-      .upload(filePath, fileToUpload, { cacheControl: "31536000", upsert: false });
+      .upload(filePath, fileToUpload, {
+        contentType: fileToUpload.type,
+        cacheControl: "31536000",
+        upsert: false,
+      });
 
     if (error) throw error;
 

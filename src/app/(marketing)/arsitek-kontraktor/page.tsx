@@ -287,6 +287,13 @@ export default function ArsitekKontraktorPage() {
         </section>
 
         {/* ========================================================
+            4. PORTFOLIO SHOWCASE
+            ======================================================== */}
+        <section aria-labelledby="gallery-title" className="pb-12 sm:pb-16 md:pb-20">
+          <HomeGallery />
+        </section>
+
+        {/* ========================================================
             2. VALUE PROPOSITIONS / PILLARS
             ======================================================== */}
         <section
@@ -402,13 +409,6 @@ export default function ArsitekKontraktorPage() {
         </section>
 
         {/* ========================================================
-            4. PORTFOLIO SHOWCASE
-            ======================================================== */}
-        <section aria-labelledby="gallery-title" className="pb-12 sm:pb-16 md:pb-20">
-          <HomeGallery />
-        </section>
-
-        {/* ========================================================
             5. BOTTOM CTA
             ======================================================== */}
         <section className="scroll-mt-24 pt-4 pb-14 sm:pt-6 sm:pb-18 md:pt-8 md:pb-22">
@@ -436,6 +436,7 @@ export default function ArsitekKontraktorPage() {
                       href={whatsappUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      data-cta-location="service_arsitek_kontraktor"
                       className="site-button-primary group/cta w-full justify-center py-3.5 text-[15px] font-medium shadow-xs hover:shadow-md transition-all"
                     >
                       <MessageCircle size={17} aria-hidden="true" />

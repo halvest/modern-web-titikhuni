@@ -18,6 +18,7 @@ const primaryLinks = [
   { href: "/arsitek-kontraktor", label: "Arsitek & kontraktor" },
   { href: "/tentang-kami", label: "Tentang kami" },
   { href: "/blog", label: "Blog & panduan" },
+  { href: "/kebijakan-privasi", label: "Kebijakan privasi" },
 ];
 
 const serviceLinks = [
@@ -183,6 +184,7 @@ export function Footer() {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                data-cta-location="footer_contact"
                 className="group inline-flex min-h-[40px] items-center gap-2 text-sm font-medium text-white transition-colors duration-200 hover:text-emerald-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
                 <MessageCircle size={15} className="text-emerald-400" aria-hidden="true" />
@@ -209,9 +211,17 @@ export function Footer() {
 
         {/* Bottom Bar: Copyright & Back to Top */}
         <div className="mt-12 flex flex-col items-center justify-between gap-5 border-t border-white/10 pt-6 text-xs text-white/45 sm:mt-16 sm:flex-row sm:items-center">
-          <p className="text-center sm:text-left">
-            &copy; {new Date().getFullYear()} Titik Huni. Seluruh hak cipta dilindungi.
-          </p>
+          <div className="flex flex-col gap-1.5 text-center sm:text-left">
+            <p>
+              &copy; {new Date().getFullYear()} Titik Huni. Seluruh hak cipta dilindungi.
+            </p>
+            <Link
+              href="/kebijakan-privasi"
+              className="text-white/60 hover:text-white transition-colors underline underline-offset-2 w-fit mx-auto sm:mx-0"
+            >
+              Kebijakan Privasi &amp; Preferensi Cookie
+            </Link>
+          </div>
 
           <div className="flex w-full flex-col items-center gap-4 sm:w-auto sm:flex-row sm:gap-6">
             <span className="hidden text-white/40 md:inline">

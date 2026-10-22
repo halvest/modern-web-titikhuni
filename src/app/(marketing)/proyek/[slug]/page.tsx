@@ -297,6 +297,7 @@ export default async function ProjectDetailPage({ params }: Props) {
                       href={whatsappHref}
                       target="_blank"
                       rel="noopener noreferrer"
+                      data-cta-location="proyek_detail_sidebar"
                       className="site-button-primary group w-full"
                     >
                       <MessageCircle size={16} aria-hidden="true" />

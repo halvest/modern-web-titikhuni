@@ -196,7 +196,21 @@ function revalidatePostPaths(slug?: string | null) {
 }
 
 function databaseError(error: { code?: string; message: string }) {
-  return error.code === "23505" ? "Slug sudah digunakan." : error.message;
+  if (error.code === "23505" || error.message?.includes("duplicate key")) {
+    return "Slug sudah digunakan.";
+  }
+  if (error.code === "23503" || error.message?.includes("foreign key")) {
+    return "Relasi data tidak valid atau referensi entitas tidak ditemukan.";
+  }
+  return error.message;
+}
+
+function isMissingFunctionError(error: { code?: string; message?: string }) {
+  return (
+    error.code === "PGRST202" ||
+    error.code === "42883" ||
+    Boolean(error.message && /could not find the function|function .* does not exist/i.test(error.message))
+  );
 }
 
 export async function savePost(formData: FormData): Promise<ActionResult> {
@@ -206,6 +220,42 @@ export async function savePost(formData: FormData): Promise<ActionResult> {
     const validationError = validatePost(postData);
     if (validationError) return { error: validationError };
 
+    const tags = relationValues(formData, "tags");
+    const unitIds = relationValues(formData, "related_unit_ids");
+    const postIds = relationValues(formData, "related_post_ids");
+
+    // 1. Transactional atomic save via PostgreSQL RPC function
+    const rpcRes = await supabase.rpc("admin_create_post_atomic", {
+      p_title: postData.title,
+      p_slug: postData.slug,
+      p_content: postData.content,
+      p_excerpt: postData.excerpt,
+      p_featured_image: postData.featured_image,
+      p_category_id: postData.category_id,
+      p_status: postData.status,
+      p_seo_title: postData.seo_title,
+      p_meta_description: postData.meta_description,
+      p_canonical_url: postData.canonical_url,
+      p_is_indexed: postData.is_indexed,
+      p_og_image: postData.og_image,
+      p_author_id: user.id,
+      p_tags: tags,
+      p_related_unit_ids: unitIds,
+      p_related_post_ids: postIds,
+    });
+
+    if (!rpcRes.error) {
+      const createdPost = rpcRes.data as { id?: string; slug?: string } | null;
+      revalidatePostPaths(createdPost?.slug || postData.slug);
+      return { success: true, id: createdPost?.id };
+    }
+
+    // If RPC failed due to validation or DB constraint, return error directly
+    if (!isMissingFunctionError(rpcRes.error)) {
+      return { error: databaseError(rpcRes.error) };
+    }
+
+    // 2. Fallback sequential save (only when RPC migration is pending deployment)
     const created = await supabase.from("posts").insert(postData).select("id, slug").single();
     if (created.error) return { error: databaseError(created.error) };
 
@@ -230,6 +280,51 @@ export async function updatePost(id: string, formData: FormData): Promise<Action
     const validationError = validatePost(postData);
     if (validationError) return { error: validationError };
 
+    const tags = relationValues(formData, "tags");
+    const unitIds = relationValues(formData, "related_unit_ids");
+    const postIds = relationValues(formData, "related_post_ids").filter((relId) => relId !== id);
+
+    // 1. Transactional atomic update via PostgreSQL RPC function
+    const rpcRes = await supabase.rpc("admin_update_post_atomic", {
+      p_id: id,
+      p_title: postData.title,
+      p_slug: postData.slug,
+      p_content: postData.content,
+      p_excerpt: postData.excerpt,
+      p_featured_image: postData.featured_image,
+      p_category_id: postData.category_id,
+      p_status: postData.status,
+      p_seo_title: postData.seo_title,
+      p_meta_description: postData.meta_description,
+      p_canonical_url: postData.canonical_url,
+      p_is_indexed: postData.is_indexed,
+      p_og_image: postData.og_image,
+      p_tags: tags,
+      p_related_unit_ids: unitIds,
+      p_related_post_ids: postIds,
+    });
+
+    if (!rpcRes.error) {
+      const updatedPost = rpcRes.data as {
+        id?: string;
+        old_slug?: string;
+        new_slug?: string;
+        slug_changed?: boolean;
+      } | null;
+
+      if (updatedPost?.old_slug) {
+        revalidatePostPaths(updatedPost.old_slug);
+      }
+      revalidatePostPaths(updatedPost?.new_slug || postData.slug);
+      return { success: true, id };
+    }
+
+    // If RPC failed due to validation or DB constraint, return error directly
+    if (!isMissingFunctionError(rpcRes.error)) {
+      return { error: databaseError(rpcRes.error) };
+    }
+
+    // 2. Fallback sequential update (only when RPC migration is pending deployment)
     const existing = await supabase.from("posts").select("slug").eq("id", id).maybeSingle();
     if (existing.error) return { error: existing.error.message };
     if (!existing.data) return { error: "Artikel tidak ditemukan." };

@@ -12,20 +12,13 @@
 /test-results/
 /playwright-report/
 /blob-report/
+/tests/
 
-# Temporary local testing scripts & scratchpad
+# Temporary local testing scripts, storage & scratchpad
 /scratch/
-/scripts/test-unit-storage-lifecycle.mjs
-/scripts/audit-unit-storage.mjs
-/scripts/seo-audit-crawler.mjs
-/scripts/qa-runner-master.mjs
-/scripts/verify-placeholders.mjs
-/scripts/generate-csvs.mjs
-/scripts/test-*.mjs
-/scripts/*audit*.mjs
-/scripts/*qa*.mjs
-/scripts/*crawler*.mjs
-!/scripts/check-home.mjs
+/storage-backups/
+/storage-manifests/
+/scripts/
 
 # Temporary screenshots, test artifacts & cache
 /screenshots/
@@ -80,11 +73,8 @@ next-env.d.ts
 !/PANDUAN_ADMIN_TITIKHUNI.md
 out.html
 
-# project documentation exceptions (allow docs and SEO deliverables)
-!/docs/
-!/docs/**
-
-# Temporary test files & artifacts inside docs
+# project documentation & tests
+/docs/
 /docs/test/
 /docs/qa-reports/**/screenshots/
 /docs/qa-reports/**/logs/
